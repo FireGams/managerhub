@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 import { api } from '../api'
 import { ManagerHubWS } from '../ws'
 import TerminalPane from '../components/Terminal'
+import Sparkline, { MeterBar, BatteryIcon } from '../components/Sparkline'
+import { useMetrics } from '../useMetrics'
 
 const tabs = ['Overview', 'Terminal', 'Services', 'Docker', 'Jobs', 'Runners'] as const
 type Tab = typeof tabs[number]
@@ -30,13 +32,19 @@ export default function MachineDetail() {
       <h2 style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
         <span className={'dot ' + (info?.online ? 'online' : 'offline')} />
         {node.name || id}
+        <span className={`status-badge ${info?.online ? 'online' : 'offline'}`} style={{ marginLeft: '.5rem' }}>
+          {info?.online ? 'Online' : 'Offline'}
+        </span>
+        {node.city && node.country && (
+          <span className="geo-badge" style={{ marginLeft: '.5rem' }}>📍 {node.city}, {node.country}</span>
+        )}
       </h2>
       <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         {tabs.map(t => (
           <button key={t} className={t === tab ? '' : 'secondary'} onClick={() => setTab(t)}>{t}</button>
         ))}
       </div>
-      {tab === 'Overview' && <Overview info={info} />}
+      {tab === 'Overview' && <Overview nodeId={id} info={info} />}
       {tab === 'Terminal' && <TerminalPane ws={wsRef.current!} nodeId={id} />}
       {tab === 'Services' && <Services ws={wsRef.current} nodeId={id} />}
       {tab === 'Docker' && <DockerTab ws={wsRef.current} nodeId={id} />}
@@ -46,42 +54,85 @@ export default function MachineDetail() {
   )
 }
 
-function Overview({ info }: { info: any }) {
+function Overview({ nodeId, info }: { nodeId: string; info: any }) {
   const n = info?.node
-  const m = info?.metrics
+  const { latest: m, cpu, ram, disk } = useMetrics(nodeId, 5000)
   if (!n) return <p className="muted">Loading…</p>
-  const pct = (a: number, b: number) => b > 0 ? Math.round((a / b) * 100) : 0
+
+  const ramPct = m ? (m.ram_used / m.ram_total) * 100 : 0
+  const diskPct = m ? (m.disk_used / m.disk_total) * 100 : 0
+
   return (
-    <div className="grid">
-      <div className="card">
-        <h3>System</h3>
-        <p>Hostname: {n.hostname}</p>
-        <p>OS: {n.os} / {n.arch}</p>
-        <p>IP: {n.ip}</p>
-        <p>Agent: {n.agent_version}</p>
-        <p>Status: {info.online ? 'Online' : 'Offline'}</p>
+    <>
+      <div className="chart-grid" style={{ marginBottom: '1rem' }}>
+        <div className="card" style={{ marginBottom: 0 }}>
+          <h3 style={{ fontSize: '.8rem', color: 'var(--muted)', marginBottom: '.5rem' }}>CPU</h3>
+          <div className="stat-big">{m?.cpu_percent?.toFixed(1) || '—'}%</div>
+          <MeterBar pct={m?.cpu_percent || 0} variant="cpu" />
+          <div className="muted" style={{ marginTop: '.3rem' }}>{m?.cpu_cores || n.cpu_cores} cores</div>
+          <div style={{ marginTop: '.5rem' }}><Sparkline data={cpu} max={100} color="#6366f1" height={40} /></div>
+        </div>
+        <div className="card" style={{ marginBottom: 0 }}>
+          <h3 style={{ fontSize: '.8rem', color: 'var(--muted)', marginBottom: '.5rem' }}>RAM</h3>
+          <div className="stat-big">{ramPct.toFixed(0)}%</div>
+          <MeterBar pct={ramPct} variant="ram" />
+          <div className="muted" style={{ marginTop: '.3rem' }}>{fmtBytes(m?.ram_used || 0)} / {fmtBytes(m?.ram_total || 0)}</div>
+          <div style={{ marginTop: '.5rem' }}><Sparkline data={ram} max={100} color="#c084fc" height={40} /></div>
+        </div>
+        <div className="card" style={{ marginBottom: 0 }}>
+          <h3 style={{ fontSize: '.8rem', color: 'var(--muted)', marginBottom: '.5rem' }}>Disk</h3>
+          <div className="stat-big">{diskPct.toFixed(0)}%</div>
+          <MeterBar pct={diskPct} variant="disk" />
+          <div className="muted" style={{ marginTop: '.3rem' }}>{fmtBytes(m?.disk_used || 0)} / {fmtBytes(m?.disk_total || 0)}</div>
+          <div style={{ marginTop: '.5rem' }}><Sparkline data={disk} max={100} color="#fbbf24" height={40} /></div>
+        </div>
+        {m?.battery_pct != null && (
+          <div className="card" style={{ marginBottom: 0 }}>
+            <h3 style={{ fontSize: '.8rem', color: 'var(--muted)', marginBottom: '.5rem' }}>Battery</h3>
+            <div className="stat-big">{m.battery_pct}%</div>
+            <MeterBar pct={m.battery_pct} variant="battery" />
+            <div style={{ marginTop: '.3rem' }}><BatteryIcon pct={m.battery_pct} charging={m.charging} /></div>
+            {m.network_type && <div className="muted" style={{ marginTop: '.3rem' }}>📶 {m.network_type}</div>}
+          </div>
+        )}
       </div>
-      {m && (
-        <>
-          <div className="card">
-            <h3>CPU</h3>
-            <p>{m.cpu_percent?.toFixed(1)}% of {m.cpu_cores} cores</p>
-            <div className="meter"><div style={{ width: m.cpu_percent + '%' }} /></div>
-            <p className="muted">Load: {m.load1?.toFixed(2)}</p>
+
+      <div className="card">
+        <h3 style={{ marginBottom: '.8rem' }}>System Info</h3>
+        <div className="chart-grid">
+          <div>
+            <p className="muted">Hostname</p>
+            <p>{n.hostname}</p>
           </div>
-          <div className="card">
-            <h3>RAM</h3>
-            <p>{fmtBytes(m.ram_used)} / {fmtBytes(m.ram_total)} ({pct(m.ram_used, m.ram_total)}%)</p>
-            <div className="meter"><div style={{ width: pct(m.ram_used, m.ram_total) + '%' }} /></div>
+          <div>
+            <p className="muted">OS / Arch</p>
+            <p>{n.os} / {n.arch}</p>
           </div>
-          <div className="card">
-            <h3>Disk</h3>
-            <p>{fmtBytes(m.disk_used)} / {fmtBytes(m.disk_total)} ({pct(m.disk_used, m.disk_total)}%)</p>
-            <div className="meter"><div style={{ width: pct(m.disk_used, m.disk_total) + '%' }} /></div>
+          <div>
+            <p className="muted">IP</p>
+            <p>{n.ip || '—'}</p>
           </div>
-        </>
-      )}
-    </div>
+          <div>
+            <p className="muted">Agent version</p>
+            <p>{n.agent_version}</p>
+          </div>
+          <div>
+            <p className="muted">Uptime</p>
+            <p>{fmtUptime(m?.uptime_sec || 0)}</p>
+          </div>
+          <div>
+            <p className="muted">Location</p>
+            <p>{n.city && n.country ? `${n.city}, ${n.country}` : 'Unknown'}</p>
+          </div>
+          {n.tags?.length > 0 && (
+            <div>
+              <p className="muted">Tags</p>
+              <p>{n.tags.join(', ')}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -114,42 +165,6 @@ function Services({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
       </table>
       {svcs.length === 0 && <p className="muted">No services found.</p>}
     </div>
-  )
-}
-
-function NodeJobs({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
-  const [output, setOutput] = useState('')
-  const [cmd, setCmd] = useState('')
-
-  useEffect(() => {
-    if (!ws) return
-    const offs = [
-      ws.on('job_output', (d: any) => setOutput(o => o + d.data)),
-      ws.on('job_result', (d: any) => setOutput(o => o + `\n[exit ${d.exit_code} — ${d.status}]\n`)),
-    ]
-    return () => { offs.forEach(f => f()) }
-  }, [ws])
-
-  function run() {
-    if (!ws || !cmd) return
-    setOutput('')
-    ws.send({ action: 'job_create', node_id: nodeId, name: 'manual', command: cmd, args: [] })
-  }
-
-  return (
-    <>
-      <div className="card" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-        <input placeholder="Command to run…" value={cmd} onChange={e => setCmd(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && run()} />
-        <button onClick={run}>Run</button>
-      </div>
-      <div className="card">
-        <h3>Output</h3>
-        <pre style={{ background: '#0a0e14', padding: '1rem', borderRadius: 6, minHeight: 120, maxHeight: 360, overflow: 'auto', fontSize: 13 }}>
-          {output || 'Run a command to see output here…'}
-        </pre>
-      </div>
-    </>
   )
 }
 
@@ -208,6 +223,42 @@ function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) 
   )
 }
 
+function NodeJobs({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
+  const [output, setOutput] = useState('')
+  const [cmd, setCmd] = useState('')
+
+  useEffect(() => {
+    if (!ws) return
+    const offs = [
+      ws.on('job_output', (d: any) => setOutput(o => o + d.data)),
+      ws.on('job_result', (d: any) => setOutput(o => o + `\n[exit ${d.exit_code} — ${d.status}]\n`)),
+    ]
+    return () => { offs.forEach(f => f()) }
+  }, [ws])
+
+  function run() {
+    if (!ws || !cmd) return
+    setOutput('')
+    ws.send({ action: 'job_create', node_id: nodeId, name: 'manual', command: cmd, args: [] })
+  }
+
+  return (
+    <>
+      <div className="card" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+        <input placeholder="Command to run…" value={cmd} onChange={e => setCmd(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && run()} />
+        <button onClick={run}>Run</button>
+      </div>
+      <div className="card">
+        <h3>Output</h3>
+        <pre style={{ background: '#0a0e14', padding: '1rem', borderRadius: 6, minHeight: 120, maxHeight: 360, overflow: 'auto', fontSize: 13 }}>
+          {output || 'Run a command to see output here…'}
+        </pre>
+      </div>
+    </>
+  )
+}
+
 function Runners({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
   const [runners, setRunners] = useState<any[]>([])
   useEffect(() => {
@@ -241,4 +292,13 @@ function fmtBytes(n: number) {
   if (n > 1e9) return (n / 1e9).toFixed(1) + ' GB'
   if (n > 1e6) return (n / 1e6).toFixed(0) + ' MB'
   return n + ' B'
+}
+
+function fmtUptime(sec: number) {
+  const d = Math.floor(sec / 86400)
+  const h = Math.floor((sec % 86400) / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  if (d > 0) return `${d}d ${h}h`
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
 }
