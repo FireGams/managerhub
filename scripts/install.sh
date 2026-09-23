@@ -64,9 +64,18 @@ BIN_PATH="${INSTALL_DIR}/managerhub-agent${EXT}"
 
 if [[ -z "$NAME" ]]; then NAME="$(hostname)"; fi
 
-echo ">> Downloading ${BINARY} ..."
+echo ">> Downloading ${BINARY} from ${URL} ..."
 if command -v curl >/dev/null 2>&1; then
-  curl -fsSL "$URL" -o "/tmp/${BINARY}"
+  if ! curl -fsSL "$URL" -o "/tmp/${BINARY}"; then
+  echo "ERROR: Download failed (404?). Trying direct GitHub API URL..."
+  ASSET_URL=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}" | grep "browser_download_url.*${BINARY}" | head -1 | sed 's/.*"browser_download_url": "\([^"]*\)".*/\1/')
+  if [[ -n "$ASSET_URL" ]]; then
+    curl -fsSL "$ASSET_URL" -o "/tmp/${BINARY}"
+  else
+    echo "ERROR: Could not download ${BINARY} for ${VERSION}"
+    exit 1
+  fi
+fi
 elif command -v wget >/dev/null 2>&1; then
   wget -q "$URL" -O "/tmp/${BINARY}"
 else
