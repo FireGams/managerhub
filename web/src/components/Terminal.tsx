@@ -5,7 +5,6 @@ export default function TerminalPane({ nodeId }: { ws?: any; nodeId: string; she
   const [output, setOutput] = useState('')
   const [cmd, setCmd] = useState('')
   const [running, setRunning] = useState(false)
-  const [history, setHistory] = useState<string[]>([])
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [output])
@@ -14,7 +13,6 @@ export default function TerminalPane({ nodeId }: { ws?: any; nodeId: string; she
     if (!cmd || running) return
     const c = cmd
     setCmd('')
-    setHistory(h => [...h, c])
     setRunning(true)
     setOutput(o => o + '\n$ ' + c + '\n')
     try {
