@@ -67,7 +67,7 @@ export default function Jobs() {
             ))}
           </tbody>
         </table>
-        {jobs.length === 0 && <p className="muted">No jobs yet.</p>}
+        {(jobs || []).length === 0 && <p className="muted">No jobs yet.</p>}
       </div>
     </>
   )

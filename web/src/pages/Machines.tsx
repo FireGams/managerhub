@@ -59,9 +59,9 @@ export default function Machines() {
               h.cpu.push(m.cpu_percent || 0)
               h.ram.push(m.ram_total ? (m.ram_used / m.ram_total) * 100 : 0)
               h.disk.push(m.disk_total ? (m.disk_used / m.disk_total) * 100 : 0)
-              if (h.cpu.length > 20) h.cpu.shift()
-              if (h.ram.length > 20) h.ram.shift()
-              if (h.disk.length > 20) h.disk.shift()
+              if (h.cpu && h.cpu.length > 20) h.cpu.shift()
+              if (h.ram && h.ram.length > 20) h.ram.shift()
+              if (h.disk && h.disk.length > 20) h.disk.shift()
               next.set(n.id, h)
               return next
             })
@@ -85,7 +85,7 @@ export default function Machines() {
           <div className="muted">Online</div>
         </div>
         <div className="card" style={{ flex: 1, textAlign: 'center', marginBottom: 0 }}>
-          <div className="stat-big">{nodes.length}</div>
+          <div className="stat-big">{(nodes || []).length}</div>
           <div className="muted">Total</div>
         </div>
       </div>

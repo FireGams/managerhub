@@ -60,7 +60,7 @@ export default function Schedules() {
             ))}
           </tbody>
         </table>
-        {list.length === 0 && <p className="muted">No schedules yet.</p>}
+        {(list || []).length === 0 && <p className="muted">No schedules yet.</p>}
       </div>
     </>
   )
