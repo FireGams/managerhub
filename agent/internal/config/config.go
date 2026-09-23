@@ -27,7 +27,7 @@ func Load() (Config, error) {
 		ControllerURL:     getenv("MH_CONTROLLER_URL", "http://localhost:8080"),
 		EnrollToken:       os.Getenv("MH_ENROLL_TOKEN"),
 		Name:              os.Getenv("MH_AGENT_NAME"),
-		StatePath:         getenv("MH_AGENT_STATE", "agent.state.json"),
+		StatePath:         getenv("MH_AGENT_STATE", ""),
 		HeartbeatInterval: duration("MH_HEARTBEAT_INTERVAL", 10*time.Second),
 		MetricsInterval:   duration("MH_METRICS_INTERVAL", 15*time.Second),
 		Shell:             os.Getenv("MH_AGENT_SHELL"),
@@ -62,6 +62,14 @@ func uintEnv(k string, def uint64) uint64 {
 		}
 	}
 	return def
+}
+
+func defaultStatePath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "agent.state.json"
+	}
+	return home + "/.managerhub/agent.state.json"
 }
 
 func getenv(k, d string) string {

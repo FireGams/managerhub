@@ -59,7 +59,7 @@ fi
 URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY}"
 
 INSTALL_DIR="/usr/local/bin"
-STATE_DIR="/var/lib/managerhub"
+STATE_DIR="${HOME}/.managerhub"
 BIN_PATH="${INSTALL_DIR}/managerhub-agent${EXT}"
 
 if [[ -z "$NAME" ]]; then NAME="$(hostname)"; fi
@@ -91,8 +91,7 @@ else
   sudo chmod +x "$BIN_PATH"
 fi
 
-sudo mkdir -p "$STATE_DIR"
-sudo chmod 755 "$STATE_DIR"
+mkdir -p "$STATE_DIR"
 
 # Enroll
 echo ">> Testing controller connection to ${CONTROLLER} ..."
@@ -109,10 +108,10 @@ export MH_ENROLL_TOKEN="$TOKEN"
 export MH_AGENT_NAME="$NAME"
 export MH_AGENT_STATE="${STATE_DIR}/agent.state.json"
 export MH_AUTO_UPDATE=true
-sudo "$BIN_PATH" &
+"$BIN_PATH" &
 AGENT_PID=$!
 sleep 3
-sudo kill "$AGENT_PID" 2>/dev/null || true
+kill "$AGENT_PID" 2>/dev/null || true
 echo ">> Enrolled (identity saved to ${STATE_DIR}/agent.state.json)"
 
 if [[ "$SERVICE" == "true" ]]; then
