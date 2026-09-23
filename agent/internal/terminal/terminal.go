@@ -107,6 +107,7 @@ func (m *Manager) Input(req protocol.TermInput) error {
 		raw = []byte(req.Data)
 	}
 	n, err := s.ptmx.Write(raw)
+	_ = n
 	if err != nil {
 		return fmt.Errorf("terminal: write: %w", err)
 	}
