@@ -9,6 +9,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
   const sessRef = useRef('')
   const termRef = useRef<XTerm | null>(null)
   const [ready, setReady] = useState(false)
+  const [cmd, setCmd] = useState('')
 
   useEffect(() => {
     if (!termDivRef.current || !ws) return
@@ -30,7 +31,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     offs.push(ws.on('terminal_ready', (d: any) => {
       sessRef.current = d.session_id
       setReady(true)
-      term.write('\r\n\x1b[32m[OK] Connected — you can type commands\x1b[0m\r\n')
+      term.write('\x1b[32m[OK] Connected\x1b[0m\r\n')
     }))
 
     offs.push(ws.on('terminal_output', (d: any) => {
@@ -52,44 +53,8 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
       }
     }))
 
-    // Open session
     ws.send({ action: 'terminal_open', node_id: nodeId, shell: shell || '', cols: term.cols, rows: term.rows })
     term.write('\x1b[90m[connecting…]\x1b[0m\r\n')
-
-    // Capture ALL keyboard events on document when terminal is active
-    function onKeyDown(e: KeyboardEvent) {
-      if (!sessRef.current) return
-      // Don't capture if user is typing in an input/textarea elsewhere
-      const tag = (e.target as HTMLElement)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-
-      let data = ''
-      if (e.key === 'Enter') data = '\r'
-      else if (e.key === 'Backspace') data = '\x7f'
-      else if (e.key === 'Tab') { data = '\t'; e.preventDefault() }
-      else if (e.key === 'Escape') data = '\x1b'
-      else if (e.key === 'ArrowUp') { data = '\x1b[A'; e.preventDefault() }
-      else if (e.key === 'ArrowDown') { data = '\x1b[B'; e.preventDefault() }
-      else if (e.key === 'ArrowRight') { data = '\x1b[C'; e.preventDefault() }
-      else if (e.key === 'ArrowLeft') { data = '\x1b[D'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'c') { data = '\x03'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'd') { data = '\x04'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'z') { data = '\x1a'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'l') { data = '\x0c'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'u') { data = '\x15'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'a') { data = '\x01'; e.preventDefault() }
-      else if (e.ctrlKey && e.key === 'e') { data = '\x05'; e.preventDefault() }
-      else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-        data = e.key
-      } else return
-
-      if (data && sessRef.current) {
-        const b64 = btoa(data)
-        ws?.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown)
 
     const resizeObs = new ResizeObserver(() => {
       fit.fit()
@@ -100,7 +65,6 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     resizeObs.observe(termDivRef.current)
 
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
       offs.forEach(f => f())
       resizeObs.disconnect()
       if (sessRef.current) ws.send({ action: 'terminal_close', session_id: sessRef.current })
@@ -109,21 +73,55 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     }
   }, [ws, nodeId, shell])
 
+  function sendCommand(e: React.FormEvent) {
+    e.preventDefault()
+    if (!cmd || !sessRef.current || !ws) return
+    // Send each character + Enter
+    for (const ch of cmd) {
+      ws.send({ action: 'terminal_input', session_id: sessRef.current, data: btoa(ch) })
+    }
+    ws.send({ action: 'terminal_input', session_id: sessRef.current, data: btoa('\r') })
+    setCmd('')
+  }
+
   return (
     <div>
       <div
         ref={termDivRef}
         style={{
           width: '100%',
-          height: '500px',
-          borderRadius: 8,
+          height: '450px',
+          borderRadius: '8px 8px 0 0',
           overflow: 'hidden',
           background: '#0a0e17',
-          cursor: 'text',
         }}
       />
-      <div style={{ marginTop: '.5rem', fontSize: '.8rem', color: ready ? 'var(--ok)' : 'var(--warn)' }}>
-        {ready ? '[OK] Session active — just type commands' : '[...] Connecting...'}
+      <form
+        onSubmit={sendCommand}
+        style={{
+          display: 'flex',
+          gap: '.5rem',
+          padding: '.5rem',
+          background: 'var(--panel2)',
+          borderRadius: '0 0 8px 8px',
+          border: '1px solid var(--border)',
+          borderTop: 'none',
+        }}
+      >
+        <span style={{ color: 'var(--accent)', alignSelf: 'center', fontFamily: 'monospace' }}>$</span>
+        <input
+          type="text"
+          value={cmd}
+          onChange={e => setCmd(e.target.value)}
+          placeholder={ready ? 'Type a command and press Enter…' : 'Waiting for connection…'}
+          disabled={!ready}
+          autoFocus
+          style={{ flex: 1, fontFamily: 'monospace', fontSize: 14 }}
+        />
+        <button type="submit" disabled={!ready || !cmd}>Run</button>
+      </form>
+      <div style={{ marginTop: '.3rem', fontSize: '.75rem', color: ready ? 'var(--ok)' : 'var(--warn)' }}>
+        {ready ? 'Session active — type commands below' : 'Connecting…'}
       </div>
     </div>
   )
