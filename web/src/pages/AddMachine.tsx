@@ -75,7 +75,7 @@ export default function AddMachine() {
         <table>
           <thead><tr><th>Label</th><th>Created by</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {tokens.map(t => (
+            {(tokens || []).map(t => (
               <tr key={t.id}>
                 <td>{t.label || '—'}</td>
                 <td>{t.created_by}</td>

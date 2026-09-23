@@ -142,10 +142,10 @@ function Overview({ nodeId, info }: { nodeId: string; info: any }) {
             <p className="muted">Location</p>
             <p>{n.city && n.country ? `${n.city}, ${n.country}` : 'Unknown'}</p>
           </div>
-          {n.tags?.length > 0 && (
+          {(n.tags || []).length > 0 && (
             <div>
               <p className="muted">Tags</p>
-              <p>{n.tags.join(', ')}</p>
+              <p>{(n.tags || []).join(', ')}</p>
             </div>
           )}
         </div>
@@ -167,7 +167,7 @@ function Services({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
       <table>
         <thead><tr><th>Name</th><th>State</th><th>Actions</th></tr></thead>
         <tbody>
-          {svcs.slice(0, 50).map((s: any) => (
+          {(svcs || []).slice(0, 50).map((s: any) => (
             <tr key={s.name}>
               <td>{s.name}</td>
               <td>{s.state}{s.sub ? ' / ' + s.sub : ''}</td>
@@ -181,7 +181,7 @@ function Services({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
           ))}
         </tbody>
       </table>
-      {svcs.length === 0 && <p className="muted">No services found.</p>}
+      {(svcs || []).length === 0 && <p className="muted">No services found.</p>}
     </div>
   )
 }
@@ -213,7 +213,7 @@ function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) 
         <table>
           <thead><tr><th>Name</th><th>Image</th><th>State</th><th>Actions</th></tr></thead>
           <tbody>
-            {containers.map((c: any) => (
+            {(containers || []).map((c: any) => (
               <tr key={c.id}>
                 <td>{c.name}</td>
                 <td><code>{c.image}</code></td>
@@ -228,7 +228,7 @@ function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) 
             ))}
           </tbody>
         </table>
-        {containers.length === 0 && <p className="muted">No containers.</p>}
+        {(containers || []).length === 0 && <p className="muted">No containers.</p>}
       </div>
       {logs && (
         <div className="card">
@@ -290,7 +290,7 @@ function Runners({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
       <table>
         <thead><tr><th>Name</th><th>Repo</th><th>Status</th><th>Service</th></tr></thead>
         <tbody>
-          {runners.map((r: any) => (
+          {(runners || []).map((r: any) => (
             <tr key={r.name}>
               <td>{r.name}</td>
               <td>{r.repo || r.org || '—'}</td>
@@ -300,7 +300,7 @@ function Runners({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
           ))}
         </tbody>
       </table>
-      {runners.length === 0 && <p className="muted">No GitHub runners detected.</p>}
+      {(runners || []).length === 0 && <p className="muted">No GitHub runners detected.</p>}
     </div>
   )
 }

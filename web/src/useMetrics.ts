@@ -42,6 +42,9 @@ export function useMetrics(nodeId: string | null, intervalMs = 5000): MetricsHis
         setLatest(m)
         const h = historyRef.current
         h.latest = m
+        if (!h.cpu) h.cpu = []
+        if (!h.ram) h.ram = []
+        if (!h.disk) h.disk = []
         h.cpu.push(m.cpu_percent || 0)
         h.ram.push(m.ram_total ? (m.ram_used / m.ram_total) * 100 : 0)
         h.disk.push(m.disk_total ? (m.disk_used / m.disk_total) * 100 : 0)

@@ -41,7 +41,7 @@ export default function AIAssistant() {
       <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.8rem', alignItems: 'center' }}>
         <span className="muted">Model:</span>
         <select value={model} onChange={e => setModel(e.target.value)} style={{ maxWidth: 300 }}>
-          {models.map(m => <option key={m} value={m}>{m}</option>)}
+          {(models || []).map(m => <option key={m} value={m}>{m}</option>)}
         </select>
       </div>
       <div className="card" style={{ height: 'calc(100vh - 260px)', display: 'flex', flexDirection: 'column' }}>
@@ -52,7 +52,7 @@ export default function AIAssistant() {
               <p>Ask anything — scripts, logs analysis, architecture, troubleshooting.</p>
             </div>
           )}
-          {msgs.map((m, i) => (
+          {(msgs || []).map((m, i) => (
             <div key={i} style={{
               marginBottom: '1rem', padding: '.75rem 1rem', borderRadius: 8,
               background: m.role === 'user' ? 'var(--border)' : 'var(--bg)',

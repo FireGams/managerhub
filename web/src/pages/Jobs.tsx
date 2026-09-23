@@ -56,7 +56,7 @@ export default function Jobs() {
         <table>
           <thead><tr><th>Name</th><th>Command</th><th>Status</th><th>Exit</th><th>Created</th></tr></thead>
           <tbody>
-            {jobs.map(j => (
+            {(jobs || []).map(j => (
               <tr key={j.id}>
                 <td>{j.name}</td>
                 <td><code>{j.command}</code></td>

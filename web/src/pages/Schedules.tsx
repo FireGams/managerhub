@@ -48,7 +48,7 @@ export default function Schedules() {
         <table>
           <thead><tr><th>Name</th><th>Cron</th><th>Command</th><th>Enabled</th><th>Last run</th><th></th></tr></thead>
           <tbody>
-            {list.map(s => (
+            {(list || []).map(s => (
               <tr key={s.id}>
                 <td>{s.name}</td>
                 <td><code>{s.cron_expr}</code></td>

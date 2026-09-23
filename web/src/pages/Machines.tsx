@@ -74,7 +74,7 @@ export default function Machines() {
     return () => { mounted = false; clearInterval(t) }
   }, [])
 
-  const onlineCount = nodes.filter(n => n.online).length
+  const onlineCount = (nodes || []).filter(n => n.online).length
 
   return (
     <>
@@ -91,7 +91,7 @@ export default function Machines() {
       </div>
       {err && <p style={{ color: 'var(--err)' }}>{err}</p>}
       <div className="grid">
-        {nodes.map(n => {
+        {(nodes || []).map(n => {
           const m = metricsMap.get(n.id)
           const h = historyMap.get(n.id) || { cpu: [], ram: [], disk: [] }
           const ramPct = m ? (m.ram_used / m.ram_total) * 100 : 0
@@ -157,7 +157,7 @@ export default function Machines() {
             </Link>
           )
         })}
-        {nodes.length === 0 && !err && (
+        {(nodes || []).length === 0 && !err && (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ fontSize: '2rem', marginBottom: '.5rem' }}>🖥️</p>
             <p className="muted">No machines yet. Go to <strong>Add Machine</strong> to enroll one.</p>

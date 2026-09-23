@@ -44,7 +44,7 @@ export default function Settings() {
         <div style={{ marginBottom: '.8rem' }}>
           <label className="muted">Model</label>
           <select value={model} onChange={e => setModel(e.target.value)}>
-            {models.map(m => <option key={m} value={m}>{m}</option>)}
+            {(models || []).map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '.8rem', marginBottom: '.8rem' }}>
