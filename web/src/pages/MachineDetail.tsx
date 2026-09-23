@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api'
 import { ManagerHubWS } from '../ws'
-import TerminalPane from '../components/Terminal'
 import Sparkline, { MeterBar, BatteryIcon } from '../components/Sparkline'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useNavigate } from 'react-router-dom'
 import { useMetrics } from '../useMetrics'
 
-const tabs = ['Overview', 'Terminal', 'Services', 'Docker', 'Jobs', 'Runners'] as const
+const tabs = ['Overview', 'Services', 'Docker', 'Jobs', 'Runners'] as const
 type Tab = typeof tabs[number]
 
 export default function MachineDetail() {
@@ -64,7 +63,6 @@ export default function MachineDetail() {
         ))}
       </div>
       {tab === 'Overview' && <Overview nodeId={id} info={info} />}
-      {tab === 'Terminal' && ws && <TerminalPane ws={ws} nodeId={id} />}
       {tab === 'Services' && <Services ws={ws} nodeId={id} />}
       {tab === 'Docker' && <DockerTab ws={ws} nodeId={id} />}
       {tab === 'Jobs' && <NodeJobs ws={ws} nodeId={id} />}
