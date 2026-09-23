@@ -82,10 +82,28 @@ func findRunnerDir() string {
 	if home, err := os.UserHomeDir(); err == nil {
 		candidates = append(candidates,
 			filepath.Join(home, "actions-runner"),
-			filepath.Join(home, "runner"))
+			filepath.Join(home, "runner"),
+			home,  // runner installed directly in home
+		)
+	}
+	// Also scan home directory for runner-like folders
+	if home, err := os.UserHomeDir(); err == nil {
+		entries, _ := os.ReadDir(home)
+		for _, e := range entries {
+			if e.IsDir() {
+				lower := strings.ToLower(e.Name())
+				if strings.Contains(lower, "runner") || strings.Contains(lower, "actions") {
+					candidates = append(candidates, filepath.Join(home, e.Name()))
+				}
+			}
+		}
 	}
 	for _, c := range candidates {
 		if st, err := os.Stat(filepath.Join(c, ".runner")); err == nil && !st.IsDir() {
+			return c
+		}
+		// Also check for run.sh which indicates a runner install
+		if st, err := os.Stat(filepath.Join(c, "run.sh")); err == nil && !st.IsDir() {
 			return c
 		}
 	}

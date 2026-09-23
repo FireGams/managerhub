@@ -2,6 +2,7 @@
 package docker
 
 import (
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -24,12 +25,40 @@ func New() *Manager { return &Manager{} }
 
 // Available reports whether Docker is installed and reachable.
 func (m *Manager) Available() bool {
-	return exec.Command("docker", "info").Run() == nil
+	// Check multiple docker binary locations (systemd PATH is minimal)
+	for _, bin := range dockerBinaries() {
+		if exec.Command(bin, "info").Run() == nil {
+			return true
+		}
+	}
+	// Fallback: check if Docker socket exists
+	if _, err := os.Stat("/var/run/docker.sock"); err == nil {
+		return true
+	}
+	return false
+}
+
+func dockerBinaries() []string {
+	return []string{
+		"docker",
+		"/usr/bin/docker",
+		"/usr/local/bin/docker",
+		"/snap/bin/docker",
+	}
+}
+
+func dockerCmd(args ...string) *exec.Cmd {
+	for _, bin := range dockerBinaries() {
+		if _, err := exec.LookPath(bin); err == nil {
+			return exec.Command(bin, args...)
+		}
+	}
+	return exec.Command("docker", args...)
 }
 
 // List returns running and stopped containers.
 func (m *Manager) List() ([]Container, error) {
-	out, err := exec.Command("docker", "ps", "-a",
+	out, err := dockerCmd("ps", "-a",
 		"--format", "{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.State}}").Output()
 	if err != nil {
 		return nil, err
@@ -55,7 +84,7 @@ func (m *Manager) List() ([]Container, error) {
 func (m *Manager) Action(nameOrID, action string) error {
 	switch action {
 	case "start", "stop", "restart":
-		return exec.Command("docker", action, nameOrID).Run()
+		return dockerCmd(action, nameOrID).Run()
 	default:
 		return errBadAction(action)
 	}
@@ -66,7 +95,7 @@ func (m *Manager) Logs(nameOrID string, tail int) (string, error) {
 	if tail <= 0 {
 		tail = 100
 	}
-	out, err := exec.Command("docker", "logs", "--tail", strconv.Itoa(tail), nameOrID).CombinedOutput()
+	out, err := dockerCmd("logs", "--tail", strconv.Itoa(tail), nameOrID).CombinedOutput()
 	return string(out), err
 }
 
