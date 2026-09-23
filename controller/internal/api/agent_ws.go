@@ -53,9 +53,9 @@ func (s *Server) handleAgentWS(w http.ResponseWriter, r *http.Request) {
 	_ = conn.Send(ack)
 
 	ws.SetReadLimit(1 << 20)
-	ws.SetReadDeadline(time.Now().Add(90 * time.Second))
+	_ = ws.SetReadDeadline(time.Now().Add(90 * time.Second))
 	ws.SetPongHandler(func(string) error {
-		ws.SetReadDeadline(time.Now().Add(90 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(90 * time.Second))
 		return nil
 	})
 
@@ -64,7 +64,7 @@ func (s *Server) handleAgentWS(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-		ws.SetReadDeadline(time.Now().Add(90 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(90 * time.Second))
 		env, err := protocol.Parse(raw)
 		if err != nil {
 			s.Log.Warn("bad envelope", "err", err)

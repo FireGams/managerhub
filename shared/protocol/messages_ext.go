@@ -38,10 +38,10 @@ type TermClosed struct {
 
 // ServiceInfo describes a host service (systemd / Windows / launchd).
 type ServiceInfo struct {
-	Name   string `json:"name"`
-	State  string `json:"state"`  // active|inactive|failed|unknown
-	Sub    string `json:"sub,omitempty"`
-	Enabled bool  `json:"enabled"`
+	Name    string `json:"name"`
+	State   string `json:"state"` // active|inactive|failed|unknown
+	Sub     string `json:"sub,omitempty"`
+	Enabled bool   `json:"enabled"`
 }
 
 // SvcListResult returns the service inventory.
@@ -53,9 +53,9 @@ type SvcListResult struct {
 
 // SvcAction requests start/stop/restart/status on one service.
 type SvcAction struct {
-	ReqID   string `json:"req_id"`
-	Name    string `json:"name"`
-	Action  string `json:"action"` // start|stop|restart|status
+	ReqID  string `json:"req_id"`
+	Name   string `json:"name"`
+	Action string `json:"action"` // start|stop|restart|status
 }
 
 // SvcActionResult reports the outcome.

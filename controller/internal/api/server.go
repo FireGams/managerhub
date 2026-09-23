@@ -25,7 +25,7 @@ type Server struct {
 	Hub   *hub.Hub
 	Log   *slog.Logger
 
-	uiMu    sync.RWMutex
+	uiMu      sync.RWMutex
 	uiClients map[*broadcaster]bool
 }
 

@@ -5,10 +5,10 @@ import "sync"
 // Deduper drops duplicate message IDs within a sliding window.
 // It is safe for concurrent use.
 type Deduper struct {
-	mu   sync.Mutex
-	seen map[string]struct{}
+	mu    sync.Mutex
+	seen  map[string]struct{}
 	order []string
-	max  int
+	max   int
 }
 
 // NewDeduper creates a Deduper keeping up to max IDs.

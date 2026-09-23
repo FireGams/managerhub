@@ -138,7 +138,7 @@ func (c *Client) writeLoop(ctx context.Context, ws *websocket.Conn, out chan<- e
 			out <- ctx.Err()
 			return
 		case <-ping.C:
-			ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := ws.WriteMessage(websocket.PingMessage, nil); err != nil {
 				out <- err
 				return
@@ -148,7 +148,7 @@ func (c *Client) writeLoop(ctx context.Context, ws *websocket.Conn, out chan<- e
 			if err != nil {
 				continue
 			}
-			ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := ws.WriteMessage(websocket.TextMessage, raw); err != nil {
 				out <- err
 				return

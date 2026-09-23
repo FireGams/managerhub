@@ -7,24 +7,25 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-		"github.com/managerhub/managerhub/controller/internal/auth"
+	"github.com/managerhub/managerhub/controller/internal/auth"
 	"github.com/managerhub/managerhub/controller/internal/db/store"
 	"github.com/managerhub/managerhub/shared/protocol"
 )
 
 // handleUIWS upgrades a browser connection for terminal + live updates.
 // Protocol (JSON text frames):
-//   → {"action":"terminal_open","node_id":"...","shell":"","cols":80,"rows":24}
-//   → {"action":"terminal_input","session_id":"...","data":"<base64>"}
-//   → {"action":"terminal_resize","session_id":"...","cols":120,"rows":40}
-//   → {"action":"terminal_close","session_id":"..."}
-//   → {"action":"job_create","name":"...","command":"...","node_id":"..."}
-//   → {"action":"job_cancel","job_id":"..."}
-//   ← {"event":"terminal_output","session_id":"...","data":"<base64>"}
-//   ← {"event":"terminal_closed","session_id":"...","reason":"..."}
-//   ← {"event":"job_output","job_id":"...","stream":"stdout","data":"..."}
-//   ← {"event":"job_result","job_id":"...","status":"...","exit_code":0}
-//   ← {"event":"node_status","node_id":"...","online":true}
+//
+//	→ {"action":"terminal_open","node_id":"...","shell":"","cols":80,"rows":24}
+//	→ {"action":"terminal_input","session_id":"...","data":"<base64>"}
+//	→ {"action":"terminal_resize","session_id":"...","cols":120,"rows":40}
+//	→ {"action":"terminal_close","session_id":"..."}
+//	→ {"action":"job_create","name":"...","command":"...","node_id":"..."}
+//	→ {"action":"job_cancel","job_id":"..."}
+//	← {"event":"terminal_output","session_id":"...","data":"<base64>"}
+//	← {"event":"terminal_closed","session_id":"...","reason":"..."}
+//	← {"event":"job_output","job_id":"...","stream":"stdout","data":"..."}
+//	← {"event":"job_result","job_id":"...","status":"...","exit_code":0}
+//	← {"event":"node_status","node_id":"...","online":true}
 func (s *Server) handleUIWS(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
@@ -71,16 +72,16 @@ func (s *Server) handleUIWS(w http.ResponseWriter, r *http.Request) {
 }
 
 type uiMessage struct {
-	Action    string `json:"action"`
-	NodeID    string `json:"node_id"`
-	SessionID string `json:"session_id"`
-	Shell     string `json:"shell"`
-	Cols      int    `json:"cols"`
-	Rows      int    `json:"rows"`
-	Data      string `json:"data"`
-	JobID     string `json:"job_id"`
-	Name      string `json:"name"`
-	Command   string `json:"command"`
+	Action    string   `json:"action"`
+	NodeID    string   `json:"node_id"`
+	SessionID string   `json:"session_id"`
+	Shell     string   `json:"shell"`
+	Cols      int      `json:"cols"`
+	Rows      int      `json:"rows"`
+	Data      string   `json:"data"`
+	JobID     string   `json:"job_id"`
+	Name      string   `json:"name"`
+	Command   string   `json:"command"`
 	Args      []string `json:"args"`
 }
 

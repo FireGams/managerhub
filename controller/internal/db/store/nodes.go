@@ -95,4 +95,3 @@ func unmarshal(b []byte, v any) error {
 	}
 	return jsonUnmarshal(b, v)
 }
-

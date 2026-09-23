@@ -30,17 +30,17 @@ type Node struct {
 
 // Metrics is one resource sample for a node.
 type Metrics struct {
-	NodeID    string    `json:"node_id"`
-	TS        time.Time `json:"ts"`
-	CPUPercent float64  `json:"cpu_percent"`
-	CPUCores  int       `json:"cpu_cores"`
-	Load1     float64   `json:"load1"`
-	RAMUsed   uint64    `json:"ram_used"`
-	RAMTotal  uint64    `json:"ram_total"`
-	DiskUsed  uint64    `json:"disk_used"`
-	DiskTotal uint64    `json:"disk_total"`
-	UptimeSec int64     `json:"uptime_sec"`
-	GPUs      string    `json:"gpus"`
+	NodeID     string    `json:"node_id"`
+	TS         time.Time `json:"ts"`
+	CPUPercent float64   `json:"cpu_percent"`
+	CPUCores   int       `json:"cpu_cores"`
+	Load1      float64   `json:"load1"`
+	RAMUsed    uint64    `json:"ram_used"`
+	RAMTotal   uint64    `json:"ram_total"`
+	DiskUsed   uint64    `json:"disk_used"`
+	DiskTotal  uint64    `json:"disk_total"`
+	UptimeSec  int64     `json:"uptime_sec"`
+	GPUs       string    `json:"gpus"`
 }
 
 // Job is a unit of remote work.
