@@ -109,7 +109,7 @@ Wants=network-online.target
 Type=simple
 ExecStart=${BIN_PATH}
 Environment=MH_CONTROLLER_URL=${CONTROLLER}
-Environment=MH_AGENT_NAME=${NAME}
+Environment=MH_AGENT_NAME="${NAME}"
 Environment=MH_AGENT_STATE=${STATE_DIR}/agent.state.json
 Environment=MH_AUTO_UPDATE=true
 Restart=always
