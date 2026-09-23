@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ManagerHub Agent installer — https://github.com/managerhub/managerhub
+# ManagerHub Agent installer — https://github.com/FireGams/managerhub
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/managerhub/managerhub/main/scripts/install.sh | bash -s -- \
+#   curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- \
 #     --controller http://your-server:8080 --token mhk_xxx --name my-machine
 set -euo pipefail
 
@@ -49,7 +49,7 @@ esac
 EXT=""
 if [[ "$OS" == "windows" ]]; then EXT=".exe"; fi
 BINARY="managerhub-agent-${OS}-${ARCH}${EXT}"
-REPO="managerhub/managerhub"
+REPO="FireGams/managerhub"
 
 if [[ "$VERSION" == "latest" ]]; then
   URL="https://github.com/${REPO}/releases/latest/download/${BINARY}"
