@@ -51,9 +51,9 @@ func (s *Server) handleUIWS(w http.ResponseWriter, r *http.Request) {
 	defer s.removeUIClient(bc)
 
 	ws.SetReadLimit(64 * 1024)
-	ws.SetReadDeadline(time.Now().Add(300 * time.Second))
+	_ = ws.SetReadDeadline(time.Now().Add(300 * time.Second))
 	ws.SetPongHandler(func(string) error {
-		ws.SetReadDeadline(time.Now().Add(300 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(300 * time.Second))
 		return nil
 	})
 
@@ -62,7 +62,7 @@ func (s *Server) handleUIWS(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-		ws.SetReadDeadline(time.Now().Add(300 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(300 * time.Second))
 		var msg uiMessage
 		if err := json.Unmarshal(raw, &msg); err != nil {
 			continue
