@@ -105,9 +105,15 @@ func (s *Server) handleUIAction(r *http.Request, bc *broadcaster, user string, m
 		bc.mu.Lock()
 		nodeID := bc.terminals[msg.SessionID]
 		bc.mu.Unlock()
+		if nodeID == "" {
+			s.Log.Warn("terminal_input: unknown session", "session", msg.SessionID)
+			return
+		}
 		env, _ := protocol.NewEnvelope(protocol.TypeTermInput, "term-in-"+uuid.NewString(), time.Now().Unix(), nodeID,
 			protocol.TermInput{SessionID: msg.SessionID, Data: msg.Data})
-		_ = s.Hub.Send(nodeID, env)
+		if err := s.Hub.Send(nodeID, env); err != nil {
+			s.Log.Warn("terminal_input: send failed", "err", err)
+		}
 
 	case "terminal_resize":
 		bc.mu.Lock()

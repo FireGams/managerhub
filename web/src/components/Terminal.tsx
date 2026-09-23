@@ -15,23 +15,33 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: { background: '#0a0e17', foreground: '#f1f5f9', cursor: '#6366f1' },
       cursorBlink: true,
+      convertEol: true,
     })
     const fit = new FitAddon()
     term.loadAddon(fit)
     term.open(ref.current)
     fit.fit()
+
+    // Focus on click
+    ref.current.addEventListener('click', () => term.focus())
     term.focus()
 
     const offs: (() => void)[] = []
 
     offs.push(ws.on('terminal_ready', (d: any) => {
       sessRef.current = d.session_id
-      term.write('\x1b[32m[connected — session ' + d.session_id.substring(0, 8) + ']\x1b[0m\r\n')
+      term.write('\r\n\x1b[32m✓ Connected — session ' + d.session_id.substring(0, 8) + '\x1b[0m\r\n')
     }))
 
     offs.push(ws.on('terminal_output', (d: any) => {
       if (d.session_id === sessRef.current) {
-        try { term.write(atob(d.data)) } catch { term.write(d.data) }
+        try {
+          // decode base64
+          const bytes = Uint8Array.from(atob(d.data), c => c.charCodeAt(0))
+          term.write(bytes)
+        } catch {
+          term.write(d.data)
+        }
       }
     }))
 
@@ -42,16 +52,21 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
       }
     }))
 
-    // Open terminal session
+    // Open session
     ws.send({ action: 'terminal_open', node_id: nodeId, shell: shell || '', cols: term.cols, rows: term.rows })
+    term.write('\x1b[90m[opening session…]\x1b[0m\r\n')
 
-    // Send raw text input (no base64 — simpler and more reliable)
+    // Input: send base64-encoded bytes
     term.onData((data: string) => {
-      if (sessRef.current) {
-        ws.send({ action: 'terminal_input', session_id: sessRef.current, data: data })
-      } else {
-        term.write('\x1b[31m[not connected yet]\x1b[0m')
+      if (!sessRef.current) {
+        term.write('\x1b[31m[no session — wait for connected]\x1b[0m')
+        return
       }
+      // Local echo for debugging (remove once confirmed working)
+      term.write(data)
+      // Send as base64
+      const b64 = btoa(data)
+      ws.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
     })
 
     const resizeObs = new ResizeObserver(() => {
@@ -72,7 +87,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
 
   return (
     <div>
-      <div ref={ref} style={{ width: '100%', height: '500px', borderRadius: 8, overflow: 'hidden', background: '#0a0e17' }} />
+      <div ref={ref} style={{ width: '100%', height: '500px', borderRadius: 8, overflow: 'hidden', background: '#0a0e17', cursor: 'text' }} />
     </div>
   )
 }

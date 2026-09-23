@@ -92,21 +92,26 @@ func (m *Manager) readLoop(id string, s *session) {
 	}
 }
 
-// Input forwards keystrokes to the PTY (raw text or base64).
+// Input forwards keystrokes to the PTY.
+// Data is base64-encoded from the UI.
 func (m *Manager) Input(req protocol.TermInput) error {
 	m.mu.Lock()
 	s, ok := m.sessions[req.SessionID]
 	m.mu.Unlock()
 	if !ok {
-		return fmt.Errorf("terminal: unknown session")
+		return fmt.Errorf("terminal: unknown session %s", req.SessionID)
 	}
-	// Try base64 first, fall back to raw text
 	raw, err := base64.StdEncoding.DecodeString(req.Data)
 	if err != nil {
+		// fallback: treat as raw text
 		raw = []byte(req.Data)
 	}
-	_, err = s.ptmx.Write(raw)
-	return err
+	n, err := s.ptmx.Write(raw)
+	if err != nil {
+		return fmt.Errorf("terminal: write: %w", err)
+	}
+	_ = n
+	return nil
 }
 
 // Resize updates the PTY window size.
