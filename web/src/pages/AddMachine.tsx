@@ -29,7 +29,7 @@ export default function AddMachine() {
 
   function copyCmd() {
     if (!newToken) return
-    const cmd = `export MH_CONTROLLER_URL=${location.origin}\nexport MH_ENROLL_TOKEN=${newToken}\n./bin/agent`
+    const cmd = `export MH_AUTO_UPDATE=true\nexport MH_CONTROLLER_URL=${location.origin}\nexport MH_ENROLL_TOKEN=${newToken}\n./bin/agent`
     navigator.clipboard.writeText(cmd)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -50,7 +50,8 @@ export default function AddMachine() {
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: 8 }}>
             <p className="muted" style={{ marginBottom: '.5rem' }}>Copy this command to the target machine:</p>
             <pre style={{ fontSize: 13, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-{`export MH_CONTROLLER_URL=${location.origin}
+{`export MH_AUTO_UPDATE=true
+export MH_CONTROLLER_URL=${location.origin}
 export MH_ENROLL_TOKEN=${newToken}
 ./bin/agent`}
             </pre>

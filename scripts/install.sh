@@ -89,6 +89,7 @@ export MH_CONTROLLER_URL="$CONTROLLER"
 export MH_ENROLL_TOKEN="$TOKEN"
 export MH_AGENT_NAME="$NAME"
 export MH_AGENT_STATE="${STATE_DIR}/agent.state.json"
+export MH_AUTO_UPDATE=true
 "$BIN_PATH" &
 AGENT_PID=$!
 sleep 3
@@ -110,6 +111,7 @@ ExecStart=${BIN_PATH}
 Environment=MH_CONTROLLER_URL=${CONTROLLER}
 Environment=MH_AGENT_NAME=${NAME}
 Environment=MH_AGENT_STATE=${STATE_DIR}/agent.state.json
+Environment=MH_AUTO_UPDATE=true
 Restart=always
 RestartSec=5
 User=root
@@ -135,6 +137,7 @@ EOF
     <key>MH_CONTROLLER_URL</key><string>${CONTROLLER}</string>
     <key>MH_AGENT_NAME</key><string>${NAME}</string>
     <key>MH_AGENT_STATE</key><string>${STATE_DIR}/agent.state.json</string>
+    <key>MH_AUTO_UPDATE</key><string>true</string>
   </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -150,7 +153,7 @@ EOF
     echo "   sc.exe start ManagerHubAgent"
   fi
 else
-  echo ">> Run manually: MH_CONTROLLER_URL=${CONTROLLER} MH_AGENT_STATE=${STATE_DIR}/agent.state.json ${BIN_PATH}"
+  echo ">> Run manually: MH_AUTO_UPDATE=true MH_CONTROLLER_URL=${CONTROLLER} MH_AGENT_STATE=${STATE_DIR}/agent.state.json ${BIN_PATH}"
 fi
 
 echo ""
