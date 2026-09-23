@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -13,12 +14,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: linux   arch: amd64
-          - os: linux   arch: arm64
-          - os: windows arch: amd64
-          - os: windows arch: arm64
-          - os: darwin  arch: amd64
-          - os: darwin  arch: arm64
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: windows
+            arch: amd64
+          - os: windows
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: darwin
+            arch: arm64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -46,8 +53,7 @@ jobs:
         with:
           go-version: '1.23'
       - name: Build controller
-        run: |
-          CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o dist/managerhub-controller ./controller/cmd/controller
+        run: CGO_ENABLED=0 go build -trimpath -ldflags '-s -w' -o dist/managerhub-controller ./controller/cmd/controller
       - uses: actions/upload-artifact@v4
         with:
           name: controller
@@ -61,9 +67,8 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Install script
-        run: |
-          cp scripts/install.sh dist/install.sh
+      - name: Add install script
+        run: cp scripts/install.sh dist/install.sh
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
