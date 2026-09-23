@@ -93,7 +93,7 @@ export default function AddMachine() {
             ))}
           </tbody>
         </table>
-        {tokens.length === 0 && <p className="muted">No tokens yet.</p>}
+        {(tokens || []).length === 0 && <p className="muted">No tokens yet.</p>}
       </div>
     </>
   )

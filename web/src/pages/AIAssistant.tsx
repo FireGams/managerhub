@@ -46,7 +46,7 @@ export default function AIAssistant() {
       </div>
       <div className="card" style={{ height: 'calc(100vh - 260px)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, overflowY: 'auto', padding: '.5rem' }}>
-          {msgs.length === 0 && (
+          {(msgs || []).length === 0 && (
             <div className="muted" style={{ textAlign: 'center', marginTop: '3rem' }}>
               <p style={{ fontSize: '2rem', marginBottom: '.5rem' }}>🤖</p>
               <p>Ask anything — scripts, logs analysis, architecture, troubleshooting.</p>

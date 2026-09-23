@@ -13,7 +13,7 @@ export default function Sparkline({ data, max = 100, color = '#6366f1', height =
   const w = 100
   const h = height
   const pts = (data || []).map((v, i) => {
-    const x = (i / (data.length - 1)) * w
+    const x = (i / ((data || []).length - 1)) * w
     const y = h - (Math.min(v, max) / max) * (h - 2) - 1
     return `${x},${y}`
   })
