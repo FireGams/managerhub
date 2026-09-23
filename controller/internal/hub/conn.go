@@ -63,7 +63,7 @@ func (c *Conn) writeLoop() {
 			if c.IsClosed() {
 				return
 			}
-			c.ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = c.ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := c.ws.WriteMessage(websocket.TextMessage, raw); err != nil {
 				return
 			}
@@ -71,7 +71,7 @@ func (c *Conn) writeLoop() {
 			if c.IsClosed() {
 				return
 			}
-			c.ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = c.ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := c.ws.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
