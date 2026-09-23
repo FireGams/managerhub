@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/api.ts","./src/main.tsx","./src/ws.ts","./src/components/Terminal.tsx","./src/pages/AIAssistant.tsx","./src/pages/AddMachine.tsx","./src/pages/Jobs.tsx","./src/pages/Login.tsx","./src/pages/MachineDetail.tsx","./src/pages/Machines.tsx","./src/pages/Schedules.tsx","./src/pages/Settings.tsx"],"version":"5.9.3"}

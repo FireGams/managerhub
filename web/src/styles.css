@@ -1,0 +1,75 @@
+:root {
+  --bg: #0f1419;
+  --panel: #1a2332;
+  --border: #2d3a4f;
+  --text: #e7ecf3;
+  --muted: #8b9bb4;
+  --accent: #3b82f6;
+  --ok: #22c55e;
+  --warn: #eab308;
+  --err: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.sidebar h1 { font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--accent); }
+.sidebar a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: .55rem .75rem;
+  border-radius: 6px;
+  font-size: .9rem;
+}
+.sidebar a:hover, .sidebar a.active { background: var(--border); color: var(--text); }
+.main { flex: 1; padding: 2rem; overflow-x: auto; }
+.main h2 { font-size: 1.4rem; margin-bottom: 1.25rem; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: .4rem; }
+.dot.online { background: var(--ok); }
+.dot.offline { background: var(--err); }
+.meter { background: var(--border); border-radius: 4px; height: 6px; margin-top: .3rem; overflow: hidden; }
+.meter > div { height: 100%; background: var(--accent); }
+.muted { color: var(--muted); font-size: .85rem; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { text-align: left; padding: .55rem .65rem; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 500; }
+button {
+  background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+  padding: .5rem 1rem; cursor: pointer; font-size: .9rem;
+}
+button.secondary { background: var(--border); }
+input, select {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: .5rem .75rem; font-size: .9rem; width: 100%;
+}
+.login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-card { width: 340px; }
+.login-card h2 { margin-bottom: 1rem; }
+.login-card label { display: block; margin-bottom: .35rem; font-size: .85rem; color: var(--muted); }
+.login-card .field { margin-bottom: .9rem; }
+@media (max-width: 720px) {
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--border); }
+  .main { padding: 1rem; }
+}

@@ -1,0 +1,33 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+agent.state.json
+
+# Go
+vendor/
+coverage.out
+coverage.html
+
+# Node / web
+node_modules/
+web/dist/
+web/.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local data
+/data/
+*.log
