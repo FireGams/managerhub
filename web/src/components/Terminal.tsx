@@ -6,7 +6,6 @@ import type { ManagerHubWS } from '../ws'
 
 export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS | null; nodeId: string; shell?: string }) {
   const termDivRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const sessRef = useRef('')
   const termRef = useRef<XTerm | null>(null)
   const [ready, setReady] = useState(false)
@@ -31,8 +30,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     offs.push(ws.on('terminal_ready', (d: any) => {
       sessRef.current = d.session_id
       setReady(true)
-      term.write('\r\n\x1b[32m✓ Connected — session ' + d.session_id.substring(0, 8) + '\x1b[0m\r\n')
-      inputRef.current?.focus()
+      term.write('\r\n\x1b[32m[OK] Connected — you can type commands\x1b[0m\r\n')
     }))
 
     offs.push(ws.on('terminal_output', (d: any) => {
@@ -56,7 +54,42 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
 
     // Open session
     ws.send({ action: 'terminal_open', node_id: nodeId, shell: shell || '', cols: term.cols, rows: term.rows })
-    term.write('\x1b[90m[opening session…]\x1b[0m\r\n')
+    term.write('\x1b[90m[connecting…]\x1b[0m\r\n')
+
+    // Capture ALL keyboard events on document when terminal is active
+    function onKeyDown(e: KeyboardEvent) {
+      if (!sessRef.current) return
+      // Don't capture if user is typing in an input/textarea elsewhere
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      let data = ''
+      if (e.key === 'Enter') data = '\r'
+      else if (e.key === 'Backspace') data = '\x7f'
+      else if (e.key === 'Tab') { data = '\t'; e.preventDefault() }
+      else if (e.key === 'Escape') data = '\x1b'
+      else if (e.key === 'ArrowUp') { data = '\x1b[A'; e.preventDefault() }
+      else if (e.key === 'ArrowDown') { data = '\x1b[B'; e.preventDefault() }
+      else if (e.key === 'ArrowRight') { data = '\x1b[C'; e.preventDefault() }
+      else if (e.key === 'ArrowLeft') { data = '\x1b[D'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'c') { data = '\x03'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'd') { data = '\x04'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'z') { data = '\x1a'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'l') { data = '\x0c'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'u') { data = '\x15'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'a') { data = '\x01'; e.preventDefault() }
+      else if (e.ctrlKey && e.key === 'e') { data = '\x05'; e.preventDefault() }
+      else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        data = e.key
+      } else return
+
+      if (data && sessRef.current) {
+        const b64 = btoa(data)
+        ws.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
 
     const resizeObs = new ResizeObserver(() => {
       fit.fit()
@@ -67,6 +100,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     resizeObs.observe(termDivRef.current)
 
     return () => {
+      document.removeEventListener('keydown', onKeyDown)
       offs.forEach(f => f())
       resizeObs.disconnect()
       if (sessRef.current) ws.send({ action: 'terminal_close', session_id: sessRef.current })
@@ -75,62 +109,10 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
     }
   }, [ws, nodeId, shell])
 
-  // Handle keyboard input via hidden input element
-  function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const data = e.target.value
-    if (!data || !sessRef.current || !termRef.current) return
-    // Send each character
-    for (const ch of data) {
-      const b64 = btoa(ch)
-      ws?.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
-    }
-    e.target.value = ''
-  }
-
-  // Handle special keys (Enter, Backspace, Tab, arrows, Ctrl+C...)
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!sessRef.current) return
-    let data = ''
-    if (e.key === 'Enter') data = '\r'
-    else if (e.key === 'Backspace') data = '\x7f'
-    else if (e.key === 'Tab') data = '\t'
-    else if (e.key === 'Escape') data = '\x1b'
-    else if (e.key === 'ArrowUp') data = '\x1b[A'
-    else if (e.key === 'ArrowDown') data = '\x1b[B'
-    else if (e.key === 'ArrowRight') data = '\x1b[C'
-    else if (e.key === 'ArrowLeft') data = '\x1b[D'
-    else if (e.ctrlKey && e.key === 'c') data = '\x03'
-    else if (e.ctrlKey && e.key === 'd') data = '\x04'
-    else if (e.ctrlKey && e.key === 'z') data = '\x1a'
-    else if (e.ctrlKey && e.key === 'l') data = '\x0c'
-    else return // let normal characters go through handleInput
-
-    e.preventDefault()
-    const b64 = btoa(data)
-    ws?.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
-  }
-
   return (
     <div>
-      {/* Hidden input captures all keyboard input */}
-      <input
-        ref={inputRef}
-        type="text"
-        autoFocus
-        style={{
-          position: 'absolute',
-          opacity: 0,
-          width: 1,
-          height: 1,
-          left: -9999,
-        }}
-        onChange={handleInput}
-        onKeyDown={handleKeyDown}
-        aria-label="terminal input"
-      />
       <div
         ref={termDivRef}
-        onClick={() => inputRef.current?.focus()}
         style={{
           width: '100%',
           height: '500px',
@@ -138,14 +120,11 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
           overflow: 'hidden',
           background: '#0a0e17',
           cursor: 'text',
-          position: 'relative',
         }}
       />
-      {!ready && (
-        <div style={{ marginTop: '.5rem', fontSize: '.8rem', color: 'var(--warn)' }}>
-          ⏳ Waiting for connection… click on the terminal and start typing.
-        </div>
-      )}
+      <div style={{ marginTop: '.5rem', fontSize: '.8rem', color: ready ? 'var(--ok)' : 'var(--warn)' }}>
+        {ready ? '[OK] Session active — just type commands' : '[...] Connecting...'}
+      </div>
     </div>
   )
 }
