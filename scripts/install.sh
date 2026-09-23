@@ -91,7 +91,8 @@ else
   sudo chmod +x "$BIN_PATH"
 fi
 
-mkdir -p "$STATE_DIR" 2>/dev/null || sudo mkdir -p "$STATE_DIR"
+sudo mkdir -p "$STATE_DIR"
+sudo chmod 755 "$STATE_DIR"
 
 # Enroll
 echo ">> Testing controller connection to ${CONTROLLER} ..."
@@ -108,10 +109,10 @@ export MH_ENROLL_TOKEN="$TOKEN"
 export MH_AGENT_NAME="$NAME"
 export MH_AGENT_STATE="${STATE_DIR}/agent.state.json"
 export MH_AUTO_UPDATE=true
-"$BIN_PATH" &
+sudo "$BIN_PATH" &
 AGENT_PID=$!
 sleep 3
-kill "$AGENT_PID" 2>/dev/null || true
+sudo kill "$AGENT_PID" 2>/dev/null || true
 echo ">> Enrolled (identity saved to ${STATE_DIR}/agent.state.json)"
 
 if [[ "$SERVICE" == "true" ]]; then
@@ -133,6 +134,7 @@ Environment=MH_AUTO_UPDATE=true
 Restart=always
 RestartSec=5
 User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target
