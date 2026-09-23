@@ -49,13 +49,14 @@ esac
 EXT=""
 if [[ "$OS" == "windows" ]]; then EXT=".exe"; fi
 BINARY="managerhub-agent-${OS}-${ARCH}${EXT}"
-REPO="FireGams/managerhub"
+REPO="${GITHUB_REPO:-FireGams/managerhub}"
 
 if [[ "$VERSION" == "latest" ]]; then
-  URL="https://github.com/${REPO}/releases/latest/download/${BINARY}"
-else
-  URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY}"
+  # Resolve the actual latest tag first
+  VERSION=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "\([^"]*\)".*/\1/')
+  if [[ -z "$VERSION" ]]; then VERSION="v0.1.0"; fi
 fi
+URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY}"
 
 INSTALL_DIR="/usr/local/bin"
 STATE_DIR="/var/lib/managerhub"
