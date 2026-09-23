@@ -85,7 +85,7 @@ export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS |
 
       if (data && sessRef.current) {
         const b64 = btoa(data)
-        ws.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
+        ws?.send({ action: 'terminal_input', session_id: sessRef.current, data: b64 })
       }
     }
 
