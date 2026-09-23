@@ -245,32 +245,44 @@ function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) 
 function NodeJobs({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
   const [output, setOutput] = useState('')
   const [cmd, setCmd] = useState('')
+  const [running, setRunning] = useState(false)
 
-  useEffect(() => {
-    if (!ws) return
-    const offs = [
-      ws.on('job_output', (d: any) => setOutput(o => o + d.data)),
-      ws.on('job_result', (d: any) => setOutput(o => o + `\n[exit ${d.exit_code} — ${d.status}]\n`)),
-    ]
-    return () => { offs.forEach(f => f()) }
-  }, [ws])
-
-  function run() {
-    if (!ws || !cmd) return
-    setOutput('')
-    ws.send({ action: 'job_create', node_id: nodeId, name: 'manual', command: cmd, args: [] })
+  async function run() {
+    if (!cmd || running) return
+    setRunning(true)
+    setOutput('$ ' + cmd + '\n')
+    try {
+      const job = await api<any>('/jobs', {
+        method: 'POST',
+        body: JSON.stringify({ name: 'terminal-cmd', command: '/bin/bash', args: ['-c', cmd], node_id: nodeId, timeout_sec: 30 }),
+      })
+      // Poll for result
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 1000))
+        const j = await api<any>('/jobs/' + job.id)
+        if (j.stdout) setOutput('$ ' + cmd + '\n' + j.stdout + (j.stderr || ''))
+        if (j.status === 'success' || j.status === 'failed' || j.status === 'cancelled' || j.status === 'timeout') {
+          setOutput('$ ' + cmd + '\n' + (j.stdout || '') + (j.stderr || '') + '\n[exit ' + j.exit_code + ' — ' + j.status + ']\n')
+          break
+        }
+      }
+    } catch (e: any) {
+      setOutput('$ ' + cmd + '\n[error] ' + e.message + '\n')
+    }
+    setRunning(false)
+    setCmd('')
   }
 
   return (
     <>
       <div className="card" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
         <input placeholder="Command to run…" value={cmd} onChange={e => setCmd(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && run()} />
-        <button onClick={run}>Run</button>
+          onKeyDown={e => e.key === 'Enter' && run()} disabled={running} />
+        <button onClick={run} disabled={running || !cmd}>{running ? 'Running…' : 'Run'}</button>
       </div>
       <div className="card">
         <h3>Output</h3>
-        <pre style={{ background: '#0a0e14', padding: '1rem', borderRadius: 6, minHeight: 120, maxHeight: 360, overflow: 'auto', fontSize: 13 }}>
+        <pre style={{ background: '#0a0e14', padding: '1rem', borderRadius: 6, minHeight: 120, maxHeight: 360, overflow: 'auto', fontSize: 13, whiteSpace: 'pre-wrap' }}>
           {output || 'Run a command to see output here…'}
         </pre>
       </div>
