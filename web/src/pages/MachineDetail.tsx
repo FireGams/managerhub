@@ -35,6 +35,7 @@ export default function MachineDetail() {
       <h2 style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
         <span className={'dot ' + (info?.online ? 'online' : 'offline')} />
         {node.name || id}
+        {node.is_local && <span className="geo-badge" style={{ marginLeft: '.5rem', background: 'rgba(99,102,241,0.2)', color: 'var(--accent2)' }}>🖥️ This machine</span>}
         <span className={`status-badge ${info?.online ? 'online' : 'offline'}`} style={{ marginLeft: '.5rem' }}>
           {info?.online ? 'Online' : 'Offline'}
         </span>

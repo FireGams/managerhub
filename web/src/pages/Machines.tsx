@@ -6,7 +6,7 @@ import Sparkline, { MeterBar, BatteryIcon } from '../components/Sparkline'
 interface Node {
   id: string; name: string; hostname: string; os: string; arch: string
   ip: string; agent_version: string; status: string; online: boolean
-  last_seen_at?: string; tags: string[]; city?: string; country?: string
+  last_seen_at?: string; tags: string[]; city?: string; country?: string; is_local?: boolean
 }
 
 interface Metrics {
@@ -101,6 +101,7 @@ export default function Machines() {
               <div className="card machine-card">
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.6rem' }}>
                   <strong style={{ fontSize: '1.05rem' }}>{n.name}</strong>
+                  {n.is_local && <span className="geo-badge" style={{ marginLeft: '.5rem', background: 'rgba(99,102,241,0.2)', color: 'var(--accent2)' }}>🖥️ This machine</span>}
                   <span className={`status-badge ${n.online ? 'online' : 'offline'}`} style={{ marginLeft: 'auto' }}>
                     <span className={'dot ' + (n.online ? 'online' : 'offline')} />
                     {n.online ? 'Online' : 'Offline'}

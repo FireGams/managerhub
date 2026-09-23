@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/managerhub/managerhub/controller/internal/auth"
@@ -25,6 +26,7 @@ func (s *Server) handleListNodes(w http.ResponseWriter, r *http.Request) {
 		Online   bool     `json:"online"`
 		LastSeen *string  `json:"last_seen_at"`
 		Tags     []string `json:"tags"`
+		IsLocal  bool     `json:"is_local"`
 	}
 	out := make([]view, 0, len(nodes))
 	for _, n := range nodes {
@@ -33,10 +35,12 @@ func (s *Server) handleListNodes(w http.ResponseWriter, r *http.Request) {
 			s := n.LastSeenAt.UTC().Format(rFC3339)
 			ls = &s
 		}
+		localHost, _ := os.Hostname()
+		isLocal := n.Hostname == localHost || n.Name == localHost
 		out = append(out, view{
 			ID: n.ID, Name: n.Name, Hostname: n.Hostname, OS: n.OS, Arch: n.Arch,
 			IP: n.IP, AgentVer: n.AgentVersion, Status: n.Status,
-			Online: s.Hub.Online(n.ID), LastSeen: ls, Tags: n.Tags,
+			Online: s.Hub.Online(n.ID), LastSeen: ls, Tags: n.Tags, IsLocal: isLocal,
 		})
 	}
 	writeJSON(w, http.StatusOK, out)
@@ -52,7 +56,9 @@ func (s *Server) handleGetNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m, _ := s.Store.LatestMetrics(r.Context(), id)
-	writeJSON(w, http.StatusOK, map[string]any{"node": n, "metrics": m, "online": s.Hub.Online(id)})
+	localHost, _ := os.Hostname()
+	isLocal := n.Hostname == localHost || n.Name == localHost
+	writeJSON(w, http.StatusOK, map[string]any{"node": n, "metrics": m, "online": s.Hub.Online(id), "is_local": isLocal})
 }
 
 func (s *Server) handleNodeMetrics(w http.ResponseWriter, r *http.Request) {
