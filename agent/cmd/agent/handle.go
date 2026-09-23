@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/managerhub/managerhub/agent/internal/runner"
 	"github.com/managerhub/managerhub/shared/protocol"
 )
 
@@ -78,6 +79,9 @@ func (a *agent) handle(env protocol.Envelope) {
 
 	case protocol.TypeDockerAction:
 		a.handleDockerAction(env)
+
+	case protocol.TypeRunnerInstall:
+		a.handleRunnerInstall(env)
 
 	default:
 		a.log.Debug("unhandled message", "type", env.Type)
@@ -176,6 +180,21 @@ func (a *agent) handleDockerAction(env protocol.Envelope) {
 		res.Error = err.Error()
 	}
 	out, _ := protocol.NewEnvelope(protocol.TypeDockerActionResult, uuid.NewString(), time.Now().Unix(),
+		a.state.NodeID, res)
+	a.cli.Send(out)
+}
+
+func (a *agent) handleRunnerInstall(env protocol.Envelope) {
+	var req protocol.RunnerInstall
+	if err := env.Decode(&req); err != nil {
+		return
+	}
+	output, err := runner.Install(req.RepoURL, req.Token, req.Name, req.Labels, req.WorkDir)
+	res := protocol.RunnerInstallResult{ReqID: env.ID, OK: err == nil, Output: output}
+	if err != nil {
+		res.Error = err.Error()
+	}
+	out, _ := protocol.NewEnvelope(protocol.TypeRunnerInstallResult, uuid.NewString(), time.Now().Unix(),
 		a.state.NodeID, res)
 	a.cli.Send(out)
 }

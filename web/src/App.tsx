@@ -7,6 +7,7 @@ import MachineDetail from './pages/MachineDetail'
 import AddMachine from './pages/AddMachine'
 import AIAssistant from './pages/AIAssistant'
 import Settings from './pages/Settings'
+import RunnersPage from './pages/Runners'
 import Login from './pages/Login'
 
 const tokenKey = 'mh_token'
@@ -24,6 +25,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     ['/machines', 'Machines'],
     ['/add-machine', 'Add Machine'],
     ['/jobs', 'Jobs'],
+    ['/runners', 'GitHub Runners'],
     ['/schedules', 'Schedules'],
     ['/ai', 'AI Assistant'],
     ['/settings', 'Settings'],
@@ -74,6 +76,7 @@ export default function App() {
         <Route path="/add-machine" element={<AddMachine />} />
         <Route path="/ai" element={<AIAssistant />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/runners" element={<RunnersPage />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/schedules" element={<Schedules />} />
         <Route path="/login" element={<Navigate to="/" />} />

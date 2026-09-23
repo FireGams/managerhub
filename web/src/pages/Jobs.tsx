@@ -13,6 +13,7 @@ export default function Jobs() {
   const [name, setName] = useState('')
   const [command, setCommand] = useState('')
   const [err, setErr] = useState('')
+  const [broadcastResult, setBroadcastResult] = useState('')
 
   const refresh = () => api<Job[]>('/jobs').then(setJobs).catch(e => setErr(e.message))
   useEffect(() => { refresh(); const t = setInterval(refresh, 4000); return () => clearInterval(t) }, [])
@@ -27,14 +28,29 @@ export default function Jobs() {
     } catch (ex: any) { setErr(ex.message) }
   }
 
+  async function broadcastToAll() {
+    if (!command) return
+    setErr(''); setBroadcastResult('')
+    try {
+      const r = await api<any>('/jobs/multi', {
+        method: 'POST',
+        body: JSON.stringify({ name: name || 'broadcast', command, all_nodes: true, timeout_sec: 300 }),
+      })
+      setBroadcastResult(`Sent to ${r.count} machine(s)`)
+      refresh()
+    } catch (e: any) { setErr(e.message) }
+  }
+
   return (
     <>
       <h2>Jobs</h2>
       <form className="card" onSubmit={create} style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
         <input placeholder="Job name" value={name} onChange={e => setName(e.target.value)} required />
         <input placeholder="Command (e.g. /bin/echo hello)" value={command} onChange={e => setCommand(e.target.value)} required />
-        <button type="submit">Run</button>
+        <button type="submit">Run on 1</button>
+        <button type="button" className="secondary" onClick={broadcastToAll}>🚀 Broadcast to ALL</button>
       </form>
+      {broadcastResult && <p style={{ color: 'var(--ok)', margin: '.5rem 0' }}>{broadcastResult}</p>}
       {err && <p style={{ color: 'var(--err)' }}>{err}</p>}
       <div className="card" style={{ overflowX: 'auto' }}>
         <table>

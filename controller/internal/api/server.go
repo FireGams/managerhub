@@ -78,6 +78,8 @@ func (s *Server) Router() http.Handler {
 			r.With(auth.RequireRole(protocol.RoleAdmin)).Post("/enroll-tokens", s.handleCreateEnrollToken)
 			r.Get("/enroll-tokens", s.handleListEnrollTokens)
 
+			r.With(auth.RequireRole(protocol.RoleOperator)).Post("/jobs/multi", s.handleMultiJob)
+			r.With(auth.RequireRole(protocol.RoleOperator)).Post("/runners/install", s.handleRunnerInstall)
 			r.Post("/ai/chat", s.handleAIChat)
 			r.Get("/ai/config", s.handleAIConfig)
 			r.With(auth.RequireRole(protocol.RoleAdmin)).Post("/ai/config", s.handleAISetConfig)

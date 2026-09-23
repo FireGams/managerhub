@@ -24,6 +24,7 @@ import (
 	"github.com/managerhub/managerhub/agent/internal/services"
 	"github.com/managerhub/managerhub/agent/internal/sysinfo"
 	"github.com/managerhub/managerhub/agent/internal/terminal"
+	"github.com/managerhub/managerhub/agent/internal/updater"
 	"github.com/managerhub/managerhub/shared/protocol"
 )
 
@@ -73,6 +74,7 @@ func run(log *slog.Logger) error {
 
 	go a.heartbeatLoop(ctx)
 	go a.metricsLoop(ctx)
+	go a.autoUpdateLoop(ctx)
 
 	log.Info("agent started", "node_id", state.NodeID, "name", cfg.Name,
 		"version", version, "os", runtime.GOOS, "arch", runtime.GOARCH)
@@ -173,6 +175,31 @@ func (a *agent) heartbeatLoop(ctx context.Context) {
 			env, _ := protocol.NewEnvelope(protocol.TypeHeartbeat, uuid.NewString(), time.Now().Unix(),
 				a.state.NodeID, protocol.Heartbeat{UptimeSec: a.coll.Uptime()})
 			a.cli.Send(env)
+		}
+	}
+}
+
+func (a *agent) autoUpdateLoop(ctx context.Context) {
+	if !updater.ShouldAutoUpdate() {
+		return
+	}
+	t := time.NewTicker(1 * time.Hour)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			info := updater.CheckForUpdate(version)
+			if info.HasNew {
+				a.log.Info("updating agent", "from", version, "to", info.Tag)
+				if err := updater.Apply(info.URL); err != nil {
+					a.log.Error("auto-update failed", "err", err)
+				} else {
+					a.log.Info("auto-update applied, restarting...")
+					_ = syscall.Kill(os.Getpid(), syscall.SIGTERM)
+				}
+			}
 		}
 	}
 }
