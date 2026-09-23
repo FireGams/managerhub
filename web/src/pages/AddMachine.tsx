@@ -38,7 +38,7 @@ export default function AddMachine() {
 
   function copyCmd() {
     if (!newToken) return
-    const cmd = `curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/refs/heads/main/scripts/install.sh | bash -s -- --controller ${controllerURL} --token ${newToken} --name \"${newLabel || 'my-machine'}\"`
+    const cmd = `curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/refs/heads/main/scripts/install.sh?cb=1 | bash -s -- --controller ${controllerURL} --token ${newToken} --name \"${newLabel || 'my-machine'}\"`
     navigator.clipboard.writeText(cmd)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -67,7 +67,7 @@ export default function AddMachine() {
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: 8 }}>
             <p className="muted" style={{ marginBottom: '.5rem' }}>Copy this command to the target machine:</p>
             <pre style={{ fontSize: 13, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-{`curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/refs/heads/main/scripts/install.sh | bash -s -- --controller ${controllerURL} --token ${newToken} --name \"${newLabel || 'my-machine'}\"`}
+{`curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/refs/heads/main/scripts/install.sh?cb=1 | bash -s -- --controller ${controllerURL} --token ${newToken} --name \"${newLabel || 'my-machine'}\"`}
             </pre>
             <p className="muted" style={{ marginTop: '.5rem' }}>Works on Linux, macOS and Windows. Installs the agent as a system service with auto-update.</p>
             <button className="secondary" onClick={copyCmd}>{copied ? 'Copied!' : 'Copy install command'}</button>
