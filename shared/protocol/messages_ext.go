@@ -66,3 +66,8 @@ type SvcActionResult struct {
 	OK     bool   `json:"ok"`
 	Error  string `json:"error,omitempty"`
 }
+
+// Uninstall tells the agent to clean up and stop.
+type Uninstall struct {
+	Reason string `json:"reason"`
+}

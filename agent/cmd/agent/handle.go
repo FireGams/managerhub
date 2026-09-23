@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -82,6 +83,11 @@ func (a *agent) handle(env protocol.Envelope) {
 
 	case protocol.TypeRunnerInstall:
 		a.handleRunnerInstall(env)
+
+	case protocol.TypeUninstall:
+		a.log.Info("uninstall requested — stopping")
+		a.term.CloseAll()
+		os.Exit(0)
 
 	default:
 		a.log.Debug("unhandled message", "type", env.Type)

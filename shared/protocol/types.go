@@ -39,6 +39,7 @@ const (
 	TypeDockerList    = "docker_list"
 	TypeDockerAction  = "docker_action"
 	TypeRunnerInstall = "runner_install"
+	TypeUninstall     = "uninstall"
 )
 
 // Job lifecycle states.

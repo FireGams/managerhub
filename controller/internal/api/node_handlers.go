@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/managerhub/managerhub/controller/internal/auth"
+	"github.com/managerhub/managerhub/shared/protocol"
 )
 
 func (s *Server) handleListNodes(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +74,10 @@ func (s *Server) handleNodeMetrics(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDeleteNode(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	// Tell the agent to uninstall itself before deleting
+	env, _ := protocol.NewEnvelope(protocol.TypeUninstall, "uninstall-"+id, nowUnix(), id,
+		protocol.Uninstall{Reason: "deleted from hub"})
+	_ = s.Hub.Send(id, env)
 	// Delete cascades: node_metrics, node_events, terminal_sessions
 	// Jobs set node_id to NULL
 	_, err := s.Store.Pool.Exec(r.Context(), `DELETE FROM nodes WHERE id=$1`, id)

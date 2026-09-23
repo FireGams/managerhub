@@ -4,11 +4,11 @@ import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import type { ManagerHubWS } from '../ws'
 
-export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS; nodeId: string; shell?: string }) {
+export default function TerminalPane({ ws, nodeId, shell }: { ws: ManagerHubWS | null; nodeId: string; shell?: string }) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!ref.current) return
+    if (!ref.current || !ws) return
     const term = new XTerm({
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',

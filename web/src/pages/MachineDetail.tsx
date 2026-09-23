@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api'
 import { ManagerHubWS } from '../ws'
@@ -16,15 +16,15 @@ export default function MachineDetail() {
   const nav = useNavigate()
   const [tab, setTab] = useState<Tab>('Overview')
   const [info, setInfo] = useState<any>(null)
-  const wsRef = useRef<ManagerHubWS | null>(null)
+  const [ws, setWs] = useState<ManagerHubWS | null>(null)
 
   useEffect(() => {
     if (!id) return
     api('/nodes/' + id).then(setInfo).catch(() => {})
     const ws = new ManagerHubWS(localStorage.getItem('mh_token') || '')
     ws.connect()
-    wsRef.current = ws
-    return () => { ws.close(); wsRef.current = null }
+    setWs(ws)
+    return () => { ws.close(); setWs(null) }
   }, [id])
 
   if (!id) return <p>No node selected</p>
@@ -64,11 +64,11 @@ export default function MachineDetail() {
         ))}
       </div>
       {tab === 'Overview' && <Overview nodeId={id} info={info} />}
-      {tab === 'Terminal' && <TerminalPane ws={wsRef.current!} nodeId={id} />}
-      {tab === 'Services' && <Services ws={wsRef.current} nodeId={id} />}
-      {tab === 'Docker' && <DockerTab ws={wsRef.current} nodeId={id} />}
-      {tab === 'Jobs' && <NodeJobs ws={wsRef.current} nodeId={id} />}
-      {tab === 'Runners' && <Runners ws={wsRef.current} nodeId={id} />}
+      {tab === 'Terminal' && ws && <TerminalPane ws={ws} nodeId={id} />}
+      {tab === 'Services' && <Services ws={ws} nodeId={id} />}
+      {tab === 'Docker' && <DockerTab ws={ws} nodeId={id} />}
+      {tab === 'Jobs' && <NodeJobs ws={ws} nodeId={id} />}
+      {tab === 'Runners' && <Runners ws={ws} nodeId={id} />}
     </>
   )
 }
