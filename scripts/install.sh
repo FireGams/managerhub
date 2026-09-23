@@ -94,6 +94,14 @@ fi
 mkdir -p "$STATE_DIR" 2>/dev/null || sudo mkdir -p "$STATE_DIR"
 
 # Enroll
+echo ">> Testing controller connection to ${CONTROLLER} ..."
+if ! curl -fsSL "${CONTROLLER}/healthz" > /dev/null 2>&1; then
+  echo "ERROR: Cannot reach ${CONTROLLER}/healthz"
+  echo "  Make sure the controller is running and the URL is correct."
+  echo "  Use the controller machine's LAN IP, not localhost, when installing on a remote machine."
+  exit 1
+fi
+
 echo ">> Enrolling with controller ..."
 export MH_CONTROLLER_URL="$CONTROLLER"
 export MH_ENROLL_TOKEN="$TOKEN"
