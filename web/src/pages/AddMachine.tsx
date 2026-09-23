@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 interface Token {
   id: string; label: string; expires_at: string
@@ -29,10 +30,17 @@ export default function AddMachine() {
 
   function copyCmd() {
     if (!newToken) return
-    const cmd = `export MH_AUTO_UPDATE=true\nexport MH_CONTROLLER_URL=${location.origin}\nexport MH_ENROLL_TOKEN=${newToken}\n./bin/agent`
+    const cmd = `curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name my-machine`
     navigator.clipboard.writeText(cmd)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function deleteToken(id: string) {
+    try {
+      await api('/enroll-tokens/' + id, { method: 'DELETE' })
+      refresh()
+    } catch (e: any) { setErr(e.message) }
   }
 
   return (
@@ -50,13 +58,11 @@ export default function AddMachine() {
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: 8 }}>
             <p className="muted" style={{ marginBottom: '.5rem' }}>Copy this command to the target machine:</p>
             <pre style={{ fontSize: 13, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-{`export MH_AUTO_UPDATE=true
-export MH_CONTROLLER_URL=${location.origin}
-export MH_ENROLL_TOKEN=${newToken}
-./bin/agent`}
+{`curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name my-machine`}
             </pre>
-            <button className="secondary" onClick={copyCmd}>{copied ? 'Copied!' : 'Copy command'}</button>
-            <p className="muted" style={{ marginTop: '.5rem' }}>Save this token — it will not be shown again.</p>
+            <p className="muted" style={{ marginTop: '.5rem' }}>Works on Linux, macOS and Windows. Installs the agent as a system service with auto-update.</p>
+            <button className="secondary" onClick={copyCmd}>{copied ? 'Copied!' : 'Copy install command'}</button>
+            <p className="muted" style={{ marginTop: '.5rem' }}>Save this token — it will not be shown again. The command downloads the agent, enrolls it, and installs the service.</p>
           </div>
         )}
       </div>
@@ -64,7 +70,7 @@ export MH_ENROLL_TOKEN=${newToken}
       <div className="card" style={{ overflowX: 'auto' }}>
         <h3 style={{ marginBottom: '.8rem' }}>Enrollment tokens</h3>
         <table>
-          <thead><tr><th>Label</th><th>Created by</th><th>Expires</th><th>Status</th></tr></thead>
+          <thead><tr><th>Label</th><th>Created by</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {tokens.map(t => (
               <tr key={t.id}>
@@ -72,6 +78,14 @@ export MH_ENROLL_TOKEN=${newToken}
                 <td>{t.created_by}</td>
                 <td className="muted">{new Date(t.expires_at).toLocaleString()}</td>
                 <td>{t.used_at ? '✓ used' : 'pending'}</td>
+                <td>
+                  <ConfirmDialog
+                    title="Delete token"
+                    message={`Delete enrollment token "${t.label || 'untitled'}"? This cannot be undone.`}
+                    confirmLabel="Delete"
+                    onConfirm={() => deleteToken(t.id)}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

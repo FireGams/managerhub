@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/managerhub/managerhub/controller/internal/auth"
 	"github.com/managerhub/managerhub/shared/protocol"
 )
@@ -119,4 +120,16 @@ func (s *Server) handleListEnrollTokens(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	writeJSON(w, http.StatusOK, list)
+}
+
+func (s *Server) handleDeleteEnrollToken(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	_, err := s.Store.Pool.Exec(r.Context(), `DELETE FROM enroll_tokens WHERE id=$1`, id)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "delete failed")
+		return
+	}
+	c, _ := auth.ClaimsFrom(r.Context())
+	_ = s.Store.AppendAudit(r.Context(), c.Subject, "enroll_token.delete", id, "")
+	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }

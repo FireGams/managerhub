@@ -63,6 +63,7 @@ func (s *Server) Router() http.Handler {
 
 			r.Get("/nodes", s.handleListNodes)
 			r.Get("/nodes/{id}", s.handleGetNode)
+			r.With(auth.RequireRole(protocol.RoleAdmin)).Delete("/nodes/{id}", s.handleDeleteNode)
 			r.Get("/nodes/{id}/metrics", s.handleNodeMetrics)
 
 			r.Get("/jobs", s.handleListJobs)
@@ -77,6 +78,7 @@ func (s *Server) Router() http.Handler {
 			r.Get("/audit", s.handleListAudit)
 			r.With(auth.RequireRole(protocol.RoleAdmin)).Post("/enroll-tokens", s.handleCreateEnrollToken)
 			r.Get("/enroll-tokens", s.handleListEnrollTokens)
+			r.With(auth.RequireRole(protocol.RoleAdmin)).Delete("/enroll-tokens/{id}", s.handleDeleteEnrollToken)
 
 			r.With(auth.RequireRole(protocol.RoleOperator)).Post("/jobs/multi", s.handleMultiJob)
 			r.With(auth.RequireRole(protocol.RoleOperator)).Post("/runners/install", s.handleRunnerInstall)

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/managerhub/managerhub/controller/internal/auth"
 )
 
 func (s *Server) handleListNodes(w http.ResponseWriter, r *http.Request) {
@@ -62,4 +63,16 @@ func (s *Server) handleNodeMetrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, []any{m})
+}
+
+func (s *Server) handleDeleteNode(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	_, err := s.Store.Pool.Exec(r.Context(), `DELETE FROM nodes WHERE id=$1`, id)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "delete failed")
+		return
+	}
+	c, _ := auth.ClaimsFrom(r.Context())
+	_ = s.Store.AppendAudit(r.Context(), c.Subject, "node.delete", id, "")
+	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
