@@ -242,7 +242,7 @@ function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) 
   )
 }
 
-function NodeJobs({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
+function NodeJobs({ nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
   const [output, setOutput] = useState('')
   const [cmd, setCmd] = useState('')
   const [running, setRunning] = useState(false)
