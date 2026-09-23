@@ -39,6 +39,8 @@ func (s *Server) handleAgentWS(w http.ResponseWriter, r *http.Request) {
 	bg := context.Background()
 	_ = s.Store.SetNodeStatus(bg, node.ID, protocol.NodeOnline)
 	_ = s.Store.AppendNodeEvent(bg, node.ID, "connected", r.RemoteAddr)
+	geo := lookupGeo(bg, readClientIP(r))
+	_, _ = s.Store.Pool.Exec(bg, `UPDATE nodes SET city=$2, country=$3 WHERE id=$1`, node.ID, geo.City, geo.Country)
 	s.Log.Info("agent connected", "node", node.Name, "id", node.ID)
 
 	defer func() {

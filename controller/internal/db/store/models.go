@@ -26,6 +26,9 @@ type Node struct {
 	Capabilities map[string]string `json:"capabilities"`
 	CreatedAt    time.Time         `json:"created_at"`
 	UpdatedAt    time.Time         `json:"updated_at"`
+	// Geolocation (from MeshService).
+	City    string `json:"city,omitempty"`
+	Country string `json:"country,omitempty"`
 }
 
 // Metrics is one resource sample for a node.

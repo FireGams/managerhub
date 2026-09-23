@@ -38,7 +38,7 @@ ports required on managed machines.
 
 ## Quick install (one command)
 
-Install the agent on any Linux/macOS machine:
+Install the agent on any machine (Linux, macOS, Windows):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/managerhub/managerhub/main/scripts/install.sh | bash -s -- \

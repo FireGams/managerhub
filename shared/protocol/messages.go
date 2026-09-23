@@ -11,6 +11,8 @@ type Hello struct {
 	IP           string            `json:"ip"`
 	Tags         []string          `json:"tags,omitempty"`
 	Capabilities map[string]string `json:"capabilities,omitempty"`
+	CPULimitPct  float64           `json:"cpu_limit_pct,omitempty"`
+	RAMLimitMB   uint64            `json:"ram_limit_mb,omitempty"`
 }
 
 // HelloAck confirms registration and returns the authoritative node ID.
@@ -28,16 +30,21 @@ type Heartbeat struct {
 
 // Metrics is a snapshot of host resource usage.
 type Metrics struct {
-	CPUPercent float64   `json:"cpu_percent"`
-	CPUCores   int       `json:"cpu_cores"`
-	Load1      float64   `json:"load1"`
-	RAMUsed    uint64    `json:"ram_used"`
-	RAMTotal   uint64    `json:"ram_total"`
-	DiskUsed   uint64    `json:"disk_used"`
-	DiskTotal  uint64    `json:"disk_total"`
-	UptimeSec  int64     `json:"uptime_sec"`
-	GPUs       []GPUInfo `json:"gpus,omitempty"`
-	Processes  int       `json:"processes,omitempty"`
+	CPUPercent  float64   `json:"cpu_percent"`
+	CPUCores    int       `json:"cpu_cores"`
+	Load1       float64   `json:"load1"`
+	RAMUsed     uint64    `json:"ram_used"`
+	RAMTotal    uint64    `json:"ram_total"`
+	DiskUsed    uint64    `json:"disk_used"`
+	DiskTotal   uint64    `json:"disk_total"`
+	UptimeSec   int64     `json:"uptime_sec"`
+	GPUs        []GPUInfo `json:"gpus,omitempty"`
+	Processes   int       `json:"processes,omitempty"`
+	CPULimitPct float64   `json:"cpu_limit_pct,omitempty"`
+	RAMLimitMB  uint64    `json:"ram_limit_mb,omitempty"`
+	BatteryPct  *int      `json:"battery_pct,omitempty"`
+	Charging    *bool     `json:"charging,omitempty"`
+	NetworkType string    `json:"network_type,omitempty"`
 }
 
 // GPUInfo describes a detected GPU device.

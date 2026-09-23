@@ -152,6 +152,7 @@ func (a *agent) sendHello() {
 			NodeID: a.state.NodeID, Name: a.cfg.Name, Hostname: hostname,
 			OS: goos, Arch: arch, AgentVer: version,
 			Tags: []string{goos}, Capabilities: map[string]string{"shell": "true"},
+			CPULimitPct: a.cfg.CPULimitPct, RAMLimitMB: a.cfg.RAMLimitMB,
 		})
 	if err == nil {
 		a.cli.Send(env)
@@ -182,6 +183,8 @@ func (a *agent) metricsLoop(ctx context.Context) {
 			return
 		case <-t.C:
 			m := a.coll.Snapshot()
+			m.CPULimitPct = a.cfg.CPULimitPct
+			m.RAMLimitMB = a.cfg.RAMLimitMB
 			env, _ := protocol.NewEnvelope(protocol.TypeMetrics, uuid.NewString(), time.Now().Unix(),
 				a.state.NodeID, m)
 			a.cli.Send(env)
