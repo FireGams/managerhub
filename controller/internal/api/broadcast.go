@@ -31,7 +31,7 @@ func (b *broadcaster) send(event string, payload any) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if !b.closed {
-		b.ws.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		_ = b.ws.SetWriteDeadline(time.Now().Add(5 * time.Second))
 		_ = b.ws.WriteMessage(websocket.TextMessage, raw)
 	}
 }

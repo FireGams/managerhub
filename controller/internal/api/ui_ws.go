@@ -39,7 +39,7 @@ func (s *Server) handleUIWS(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer ws.Close()
+	defer func() { _ = ws.Close() }()
 
 	user := claims.Subject
 	s.Log.Info("ui ws connected", "user", user)

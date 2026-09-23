@@ -119,7 +119,7 @@ func enroll(cfg config.Config, log *slog.Logger) (identity.State, error) {
 	if err != nil {
 		return st, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusCreated {
 		return st, fmt.Errorf("enroll: status %d", resp.StatusCode)
 	}

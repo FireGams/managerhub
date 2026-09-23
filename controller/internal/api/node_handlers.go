@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -57,10 +56,6 @@ func (s *Server) handleGetNode(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleNodeMetrics(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	if limit <= 0 {
-		limit = 60
-	}
 	m, err := s.Store.LatestMetrics(r.Context(), id)
 	if err != nil {
 		writeJSON(w, http.StatusOK, []any{})

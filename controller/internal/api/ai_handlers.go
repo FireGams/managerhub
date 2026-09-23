@@ -103,7 +103,7 @@ func (s *Server) handleAIChat(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadGateway, "OpenRouter error: "+err.Error())
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if resp.StatusCode != 200 {
 		writeErr(w, resp.StatusCode, "OpenRouter: "+string(raw))

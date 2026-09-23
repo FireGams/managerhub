@@ -45,9 +45,6 @@ func (s *Server) handleEnroll(w http.ResponseWriter, r *http.Request) {
 	}
 	nodeToken, tokenHash := newEnrollSecret()
 	nodeID := uuid.NewString()
-	if req.Hostname != "" {
-		// keep a stable id when the agent already knows one
-	}
 	n, err := s.Store.UpsertNode(r.Context(), store.Node{
 		ID: nodeID, Name: req.Name, Hostname: req.Hostname, OS: req.OS, Arch: req.Arch,
 		IP: req.IP, AgentVersion: req.AgentVersion, Tags: req.Tags, Capabilities: req.Capabilities,

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -136,5 +135,4 @@ func (a *agent) sendError(refID, code string, err error) {
 	out, _ := protocol.NewEnvelope(protocol.TypeError, uuid.NewString(), time.Now().Unix(),
 		a.state.NodeID, protocol.ErrorPayload{Code: code, Message: err.Error(), RefID: refID})
 	a.cli.Send(out)
-	_ = fmt.Sprintf("")
 }

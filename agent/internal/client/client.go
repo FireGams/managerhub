@@ -159,9 +159,9 @@ func (c *Client) writeLoop(ctx context.Context, ws *websocket.Conn, out chan<- e
 
 func (c *Client) readLoop(ws *websocket.Conn) error {
 	ws.SetReadLimit(1 << 20)
-	ws.SetReadDeadline(time.Now().Add(120 * time.Second))
+	_ = ws.SetReadDeadline(time.Now().Add(120 * time.Second))
 	ws.SetPongHandler(func(string) error {
-		ws.SetReadDeadline(time.Now().Add(120 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(120 * time.Second))
 		return nil
 	})
 	for {
@@ -169,7 +169,7 @@ func (c *Client) readLoop(ws *websocket.Conn) error {
 		if err != nil {
 			return err
 		}
-		ws.SetReadDeadline(time.Now().Add(120 * time.Second))
+		_ = ws.SetReadDeadline(time.Now().Add(120 * time.Second))
 		env, err := protocol.Parse(raw)
 		if err != nil {
 			c.log.Warn("client: bad envelope", "err", err)
