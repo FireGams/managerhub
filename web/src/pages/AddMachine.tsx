@@ -15,9 +15,15 @@ export default function AddMachine() {
   const [newLabel, setNewLabel] = useState('')
   const [err, setErr] = useState('')
   const [copied, setCopied] = useState(false)
+  const [controllerURL, setControllerURL] = useState(location.origin)
 
   const refresh = () => api<Token[]>('/enroll-tokens').then(setTokens).catch(() => {})
-  useEffect(() => { refresh() }, [])
+  useEffect(() => {
+    refresh()
+    api<{public_url: string}>('/config').then(c => {
+      if (c.public_url) setControllerURL(c.public_url)
+    }).catch(() => {})
+  }, [])
 
   async function create() {
     setErr(''); setNewToken('')

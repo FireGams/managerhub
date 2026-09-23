@@ -55,6 +55,7 @@ func (s *Server) Router() http.Handler {
 
 		// Agent enrollment (one-time token) and WebSocket.
 		r.Post("/agent/enroll", s.handleEnroll)
+		r.Get("/config", s.handlePublicConfig)
 		r.Get("/agent/ws", s.handleAgentWS)
 
 		r.Group(func(r chi.Router) {

@@ -17,3 +17,7 @@ var schedulerReload = func() {}
 func SetSchedulerReload(fn func()) { schedulerReload = fn }
 
 func (s *Server) reloadScheduler() { schedulerReload() }
+
+func (s *Server) handlePublicConfig(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"public_url": s.Cfg.PublicURL})
+}
