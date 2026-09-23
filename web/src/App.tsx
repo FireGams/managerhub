@@ -18,7 +18,7 @@ export function setToken(t: string) {
   else localStorage.removeItem(tokenKey)
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children, onLogout }: { children: React.ReactNode; onLogout: () => void }) {
   const nav = useNavigate()
   const links = [
     ['/', 'Dashboard'],
@@ -38,7 +38,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           <NavLink key={to} to={to} end={to === '/'}>{label}</NavLink>
         ))}
         <button className="secondary" style={{ marginTop: 'auto' }}
-          onClick={() => { setToken(''); nav('/login') }}>
+          onClick={() => { setToken(''); onLogout(); nav('/login') }}>
           Logout
         </button>
       </aside>
@@ -68,7 +68,7 @@ export default function App() {
     )
   }
   return (
-    <Shell>
+    <Shell onLogout={() => setAuthed(false)}>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/machines" element={<Machines />} />

@@ -13,5 +13,6 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     const body = await res.json().catch(() => ({ error: res.statusText }))
     throw new Error(body.error || res.statusText)
   }
-  return res.json()
+  const text = await res.text()
+  return text ? JSON.parse(text) : ({} as T)
 }

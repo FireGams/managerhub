@@ -4,6 +4,8 @@ import { api } from '../api'
 import { ManagerHubWS } from '../ws'
 import TerminalPane from '../components/Terminal'
 import Sparkline, { MeterBar, BatteryIcon } from '../components/Sparkline'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { useNavigate } from 'react-router-dom'
 import { useMetrics } from '../useMetrics'
 
 const tabs = ['Overview', 'Terminal', 'Services', 'Docker', 'Jobs', 'Runners'] as const
@@ -11,6 +13,7 @@ type Tab = typeof tabs[number]
 
 export default function MachineDetail() {
   const { id } = useParams<{ id: string }>()
+  const nav = useNavigate()
   const [tab, setTab] = useState<Tab>('Overview')
   const [info, setInfo] = useState<any>(null)
   const wsRef = useRef<ManagerHubWS | null>(null)
@@ -38,6 +41,17 @@ export default function MachineDetail() {
         {node.city && node.country && (
           <span className="geo-badge" style={{ marginLeft: '.5rem' }}>📍 {node.city}, {node.country}</span>
         )}
+        <span style={{ marginLeft: 'auto' }}>
+          <ConfirmDialog
+            title="Delete machine"
+            message={`Remove "${node.name}" from ManagerHub? The agent will need to re-enroll.`}
+            confirmLabel="Delete machine"
+            onConfirm={async () => {
+              await api('/nodes/' + id, { method: 'DELETE' })
+              nav('/machines')
+            }}
+          />
+        </span>
       </h2>
       <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         {tabs.map(t => (
