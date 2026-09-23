@@ -12,6 +12,7 @@ export default function AddMachine() {
   const [tokens, setTokens] = useState<Token[]>([])
   const [label, setLabel] = useState('')
   const [newToken, setNewToken] = useState('')
+  const [newLabel, setNewLabel] = useState('')
   const [err, setErr] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -23,6 +24,7 @@ export default function AddMachine() {
     try {
       const t = await api<Token>('/enroll-tokens', { method: 'POST', body: JSON.stringify({ label }) })
       setNewToken(t.token || '')
+      setNewLabel(label)
       setLabel('')
       refresh()
     } catch (e: any) { setErr(e.message) }
@@ -30,17 +32,18 @@ export default function AddMachine() {
 
   function copyCmd() {
     if (!newToken) return
-    const cmd = `curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name my-machine`
+    const cmd = `curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name ${newLabel || 'my-machine'}`
     navigator.clipboard.writeText(cmd)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   async function deleteToken(id: string) {
+    setErr('')
     try {
       await api('/enroll-tokens/' + id, { method: 'DELETE' })
       refresh()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr('Delete failed: ' + e.message) }
   }
 
   return (
@@ -58,7 +61,7 @@ export default function AddMachine() {
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: 8 }}>
             <p className="muted" style={{ marginBottom: '.5rem' }}>Copy this command to the target machine:</p>
             <pre style={{ fontSize: 13, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-{`curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name my-machine`}
+{`curl -fsSL https://raw.githubusercontent.com/FireGams/managerhub/main/scripts/install.sh | bash -s -- --controller ${location.origin} --token ${newToken} --name ${newLabel || 'my-machine'}`}
             </pre>
             <p className="muted" style={{ marginTop: '.5rem' }}>Works on Linux, macOS and Windows. Installs the agent as a system service with auto-update.</p>
             <button className="secondary" onClick={copyCmd}>{copied ? 'Copied!' : 'Copy install command'}</button>

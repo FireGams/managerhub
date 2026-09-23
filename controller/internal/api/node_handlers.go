@@ -67,9 +67,11 @@ func (s *Server) handleNodeMetrics(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDeleteNode(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	// Delete cascades: node_metrics, node_events, terminal_sessions
+	// Jobs set node_id to NULL
 	_, err := s.Store.Pool.Exec(r.Context(), `DELETE FROM nodes WHERE id=$1`, id)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "delete failed")
+		writeErr(w, http.StatusInternalServerError, "delete failed: "+err.Error())
 		return
 	}
 	c, _ := auth.ClaimsFrom(r.Context())

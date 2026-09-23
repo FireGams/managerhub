@@ -47,8 +47,12 @@ export default function MachineDetail() {
             message={`Remove "${node.name}" from ManagerHub? The agent will need to re-enroll.`}
             confirmLabel="Delete machine"
             onConfirm={async () => {
-              await api('/nodes/' + id, { method: 'DELETE' })
-              nav('/machines')
+              try {
+                await api('/nodes/' + id, { method: 'DELETE' })
+                nav('/machines')
+              } catch (e: any) {
+                alert('Delete failed: ' + e.message)
+              }
             }}
           />
         </span>
