@@ -171,6 +171,16 @@ func (s *Server) handleUIAction(r *http.Request, bc *broadcaster, user string, m
 		env, _ := protocol.NewEnvelope(protocol.TypeRunnerAction, "run-act-"+uuid.NewString(), time.Now().Unix(), msg.NodeID,
 			protocol.RunnerAction{ReqID: msg.SessionID, Name: msg.Data, Action: msg.Name})
 		_ = s.Hub.Send(msg.NodeID, env)
+
+	case "docker_list":
+		env, _ := protocol.NewEnvelope(protocol.TypeDockerList, "dock-list-"+uuid.NewString(), time.Now().Unix(), msg.NodeID,
+			protocol.DockerListResult{})
+		_ = s.Hub.Send(msg.NodeID, env)
+
+	case "docker_action":
+		env, _ := protocol.NewEnvelope(protocol.TypeDockerAction, "dock-act-"+uuid.NewString(), time.Now().Unix(), msg.NodeID,
+			protocol.DockerAction{ReqID: msg.SessionID, Name: msg.Data, Action: msg.Name})
+		_ = s.Hub.Send(msg.NodeID, env)
 	}
 }
 

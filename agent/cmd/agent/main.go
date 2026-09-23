@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/managerhub/managerhub/agent/internal/client"
 	"github.com/managerhub/managerhub/agent/internal/config"
+	"github.com/managerhub/managerhub/agent/internal/docker"
 	"github.com/managerhub/managerhub/agent/internal/identity"
 	"github.com/managerhub/managerhub/agent/internal/jobs"
 	"github.com/managerhub/managerhub/agent/internal/runner"
@@ -55,14 +56,15 @@ func run(log *slog.Logger) error {
 	}
 
 	a := &agent{
-		cfg:   cfg,
-		state: state,
-		cli:   cli,
-		log:   log,
-		jobs:  jobs.NewRunner(cli, state.NodeID),
-		term:  terminal.NewManager(cli, state.NodeID, cfg.Shell),
-		svc:   services.New(),
-		coll:  sysinfo.NewCollector(),
+		cfg:    cfg,
+		state:  state,
+		cli:    cli,
+		log:    log,
+		jobs:   jobs.NewRunner(cli, state.NodeID),
+		term:   terminal.NewManager(cli, state.NodeID, cfg.Shell),
+		svc:    services.New(),
+		docker: docker.New(),
+		coll:   sysinfo.NewCollector(),
 	}
 	a.det = runner.NewDetector(a.svc)
 
@@ -141,8 +143,9 @@ type agent struct {
 		List() ([]protocol.ServiceInfo, error)
 		Action(name, action string) error
 	}
-	det  *runner.Detector
-	coll *sysinfo.Collector
+	docker *docker.Manager
+	det    *runner.Detector
+	coll   *sysinfo.Collector
 }
 
 func (a *agent) sendHello() {

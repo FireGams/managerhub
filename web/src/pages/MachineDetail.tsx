@@ -4,7 +4,7 @@ import { api } from '../api'
 import { ManagerHubWS } from '../ws'
 import TerminalPane from '../components/Terminal'
 
-const tabs = ['Overview', 'Terminal', 'Services', 'Jobs', 'Runners'] as const
+const tabs = ['Overview', 'Terminal', 'Services', 'Docker', 'Jobs', 'Runners'] as const
 type Tab = typeof tabs[number]
 
 export default function MachineDetail() {
@@ -39,6 +39,7 @@ export default function MachineDetail() {
       {tab === 'Overview' && <Overview info={info} />}
       {tab === 'Terminal' && <TerminalPane ws={wsRef.current!} nodeId={id} />}
       {tab === 'Services' && <Services ws={wsRef.current} nodeId={id} />}
+      {tab === 'Docker' && <DockerTab ws={wsRef.current} nodeId={id} />}
       {tab === 'Jobs' && <NodeJobs ws={wsRef.current} nodeId={id} />}
       {tab === 'Runners' && <Runners ws={wsRef.current} nodeId={id} />}
     </>
@@ -148,6 +149,61 @@ function NodeJobs({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
           {output || 'Run a command to see output here…'}
         </pre>
       </div>
+    </>
+  )
+}
+
+function DockerTab({ ws, nodeId }: { ws: ManagerHubWS | null; nodeId: string }) {
+  const [containers, setContainers] = useState<any[]>([])
+  const [available, setAvailable] = useState(false)
+  const [logs, setLogs] = useState('')
+  useEffect(() => {
+    if (!ws) return
+    const offs = [
+      ws.on('docker_list_result', (d: any) => {
+        setAvailable(d.available)
+        setContainers(d.containers || [])
+      }),
+      ws.on('docker_action_result', (d: any) => {
+        if (d.action === 'logs') setLogs(d.logs || d.error || '')
+        else ws?.send({ action: 'docker_list', node_id: nodeId })
+      }),
+    ]
+    ws.send({ action: 'docker_list', node_id: nodeId })
+    return () => { offs.forEach(f => f()) }
+  }, [ws, nodeId])
+
+  if (!available) return <div className="card"><p className="muted">Docker not available on this machine.</p></div>
+  return (
+    <>
+      <div className="card" style={{ overflowX: 'auto' }}>
+        <table>
+          <thead><tr><th>Name</th><th>Image</th><th>State</th><th>Actions</th></tr></thead>
+          <tbody>
+            {containers.map((c: any) => (
+              <tr key={c.id}>
+                <td>{c.name}</td>
+                <td><code>{c.image}</code></td>
+                <td>{c.state}</td>
+                <td>
+                  {['start', 'stop', 'restart', 'logs'].map(a => (
+                    <button key={a} className="secondary" style={{ marginRight: '.3rem', padding: '.25rem .5rem' }}
+                      onClick={() => ws?.send({ action: 'docker_action', node_id: nodeId, name: a, data: c.name })}>{a}</button>
+                  ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {containers.length === 0 && <p className="muted">No containers.</p>}
+      </div>
+      {logs && (
+        <div className="card">
+          <h3>Logs</h3>
+          <pre style={{ background: '#0a0e14', padding: '1rem', borderRadius: 6, maxHeight: 300, overflow: 'auto', fontSize: 12 }}>{logs}</pre>
+          <button className="secondary" onClick={() => setLogs('')}>Clear</button>
+        </div>
+      )}
     </>
   )
 }

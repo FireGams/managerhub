@@ -73,6 +73,12 @@ func (a *agent) handle(env protocol.Envelope) {
 	case protocol.TypeRunnerAction:
 		a.handleRunnerAction(env)
 
+	case protocol.TypeDockerList:
+		a.handleDockerList(env)
+
+	case protocol.TypeDockerAction:
+		a.handleDockerAction(env)
+
 	default:
 		a.log.Debug("unhandled message", "type", env.Type)
 	}
@@ -127,6 +133,49 @@ func (a *agent) handleRunnerAction(env protocol.Envelope) {
 		res.Error = err.Error()
 	}
 	out, _ := protocol.NewEnvelope(protocol.TypeRunnerActionResult, uuid.NewString(), time.Now().Unix(),
+		a.state.NodeID, res)
+	a.cli.Send(out)
+}
+
+func (a *agent) handleDockerList(env protocol.Envelope) {
+	avail := a.docker.Available()
+	res := protocol.DockerListResult{ReqID: env.ID, Available: avail}
+	if avail {
+		list, err := a.docker.List()
+		if err != nil {
+			res.Error = err.Error()
+		} else {
+			for _, c := range list {
+				res.Containers = append(res.Containers, map[string]string{
+					"id": c.ID, "name": c.Name, "image": c.Image,
+					"status": c.Status, "state": c.State,
+				})
+			}
+		}
+	}
+	out, _ := protocol.NewEnvelope(protocol.TypeDockerListResult, uuid.NewString(), time.Now().Unix(),
+		a.state.NodeID, res)
+	a.cli.Send(out)
+}
+
+func (a *agent) handleDockerAction(env protocol.Envelope) {
+	var req protocol.DockerAction
+	if err := env.Decode(&req); err != nil {
+		return
+	}
+	var logs string
+	var err error
+	if req.Action == "logs" {
+		logs, err = a.docker.Logs(req.Name, 100)
+	} else {
+		err = a.docker.Action(req.Name, req.Action)
+	}
+	res := protocol.DockerActionResult{ReqID: env.ID, Name: req.Name, Action: req.Action,
+		OK: err == nil, Logs: logs}
+	if err != nil {
+		res.Error = err.Error()
+	}
+	out, _ := protocol.NewEnvelope(protocol.TypeDockerActionResult, uuid.NewString(), time.Now().Unix(),
 		a.state.NodeID, res)
 	a.cli.Send(out)
 }

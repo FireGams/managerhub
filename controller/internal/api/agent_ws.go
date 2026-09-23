@@ -145,6 +145,16 @@ func (s *Server) dispatchAgentMessage(nodeID string, env protocol.Envelope) {
 		if err := env.Decode(&r); err == nil {
 			s.broadcastUI("runners_action_result", r)
 		}
+	case protocol.TypeDockerListResult:
+		var r protocol.DockerListResult
+		if err := env.Decode(&r); err == nil {
+			s.broadcastUI("docker_list_result", r)
+		}
+	case protocol.TypeDockerActionResult:
+		var r protocol.DockerActionResult
+		if err := env.Decode(&r); err == nil {
+			s.broadcastUI("docker_action_result", r)
+		}
 	default:
 		s.Log.Debug("unhandled agent message", "type", env.Type)
 	}

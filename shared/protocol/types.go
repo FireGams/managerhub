@@ -16,6 +16,8 @@ const (
 	TypeSvcActionResult    = "svc_action_result"
 	TypeRunnerListResult   = "runner_list_result"
 	TypeRunnerActionResult = "runner_action_result"
+	TypeDockerListResult   = "docker_list_result"
+	TypeDockerActionResult = "docker_action_result"
 	TypeError              = "error"
 )
 
@@ -33,6 +35,8 @@ const (
 	TypeSvcAction    = "svc_action"
 	TypeRunnerList   = "runner_list"
 	TypeRunnerAction = "runner_action"
+	TypeDockerList   = "docker_list"
+	TypeDockerAction = "docker_action"
 )
 
 // Job lifecycle states.
